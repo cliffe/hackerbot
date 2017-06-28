@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<hackerbot xmlns="http://www.github/cliffe/SecGen/hackerbot"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.github/cliffe/SecGen/hackerbot">
+
+	<name>Hackerbot</name>
+
+	<greeting>I am going to hack you, so you might want to prepare yourself.</greeting>
+
+
+	<dothis>
+		<prompt>I will try to delete /tmp/1. Try to stop me using access controls. Just say "!hack1", when you are ready!</prompt>
+		<trigger-message>hack1</trigger-message>
+		<!--<trigger-timer></trigger-timer>-->
+		<attack>
+			<command>ssh -oStrictHostKeyChecking=no localhost rm /tmp/1</command>
+			<sucess_regexp>Permission</sucess_regexp>
+			<on_success_message>flag{yay!}</on_success_message>
+			<on_fail_message>Nope!</on_fail_message>
+
+		</attack>
+
+	</dothis>
+
+</hackerbot> 
