@@ -111,8 +111,13 @@ def read_bots
             bots[bot_name]['hacks'][current]['condition'].each do |condition|
               if condition.key?('output_contains')
                 # TODO
+                m.reply "testing if #{line} contains #{condition['output_contains']}"
                 # if line =~ /condition['output_contains']/
+                if true # TODO
+                  m.reply "#{condition['message']}"
+                end
               end
+              # TODO else condition
             end
 
             # answer = gets.chomp()
