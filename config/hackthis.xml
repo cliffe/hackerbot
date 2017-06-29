@@ -1,25 +1,60 @@
 <?xml version="1.0"?>
-<hackerbot xmlns="http://www.github/cliffe/SecGen/hackerbot"
+<hackerbot xmlns="http://www.github/cliffe/SecGen/hackerbotz"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="http://www.github/cliffe/SecGen/hackerbot">
 
 	<name>Hackerbot</name>
 
-	<greeting>I am going to hack you, so you might want to prepare yourself.</greeting>
+	<greeting>The blackhat hacking group Empir3 are about to hack your system. I'll do what I can hold them off, but you are going to have to work with me to protect yourself. I'll cough up some flags if you work with me.</greeting>
+
+	<hack>
+		<prompt>An attempt to delete /tmp/1 is coming. Stop the attack using access controls.</prompt>
+		<trigger_message>ready</trigger_message>
+		<!--<trigger-timer></trigger-timer>-->
+
+		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+		<get_shell>bash</get_shell>
+		<shell_fail_message>Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>rm /tmp/1</post_command>
+		<condition>
+			<output_contains>Permission</output_contains>
+			<message>flag{yay1!}</message>
+		</condition>
+		<condition>
+			<output_contains>No such file or directory</output_contains>
+			<message>The file should exist!</message>
+		</condition>
+		<else_condition>
+			<message>Something was not right...</message>
+		</else_condition>
 
 
-	<dothis>
-		<prompt>I will try to delete /tmp/1. Try to stop me using access controls. Just say "!hack1", when you are ready!</prompt>
+
+	</hack>
+
+	<hack>
+		<prompt>An attempt to delete /tmp/2 is coming. Stop the attack using access controls.</prompt>
 		<trigger-message>hack1</trigger-message>
 		<!--<trigger-timer></trigger-timer>-->
 		<attack>
-			<command>ssh -oStrictHostKeyChecking=no localhost rm /tmp/1</command>
-			<sucess_regexp>Permission</sucess_regexp>
-			<on_success_message>flag{yay!}</on_success_message>
-			<on_fail_message>Nope!</on_fail_message>
+			<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+			<get_shell>bash</get_shell>
+			<shell_fail_message>Failed to get shell... You need to let us in.</shell_fail_message>
+			<post_command>rm /tmp/1</post_command>
+			<condition>
+				<output_contains>Permission</output_contains>
+				<message>flag{yay2!}</message>
+			</condition>
+			<condition>
+				<output_contains>No such file or directory</output_contains>
+				<message>The file should exist!</message>
+			</condition>
+			<else_condition>
+				<message>Something was not right...</message>
+			</else_condition>
 
 		</attack>
 
-	</dothis>
+	</hack>
 
 </hackerbot> 

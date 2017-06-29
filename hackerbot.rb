@@ -1,5 +1,8 @@
 require 'cinch'
 require 'nokogiri'
+require 'nori'
+require './print.rb'
+require 'open3'
 
 def read_bots
   bots = {}
@@ -12,7 +15,7 @@ def read_bots
     begin
       doc = Nokogiri::XML(File.read(file))
     rescue
-      # Print.err "Failed to read hackerbot file (#{file})"
+      Print.err "Failed to read hackerbot file (#{file})"
       print "Failed to read hackerbot file (#{file})"
 
       exit
@@ -42,31 +45,82 @@ def read_bots
     doc.xpath('/hackerbot').each_with_index do |hackerbot|
 
       bot_name = hackerbot.at_xpath('name').text
-      print bot_name
+      Print.debug bot_name
       bots[bot_name] = {}
       bots[bot_name]['greeting'] = hackerbot.at_xpath('greeting').text
-      bots[bot_name]['dothis'] = {}
+      bots[bot_name]['hacks'] = []
+      hackerbot.xpath('//hack').each do |hack|
+        bots[bot_name]['hacks'].push Nori.new.parse(hack.to_s)['hack']
+
+      end
+      bots[bot_name]['current_hack'] = 0
+
+      Print.debug bots[bot_name]['hacks'].to_s
+
       # for each dothis TODO!
       # bots[bot_name]['dothis'][prompt] =
 
       bots[bot_name]['bot'] = Cinch::Bot.new do
         configure do |c|
           c.nick = bot_name
-          c.server = "irc.freenode.org"
+          c.server = "172.28.128.3" # "irc.freenode.org" TODO
           c.channels = ["#hackerbottesting"]
         end
 
-
-        hackerbot.xpath('//dothis').each do |dothis|
-          bots[bot_name]['greeting'] += ' **** ' + dothis.at_xpath('prompt').text
-
-        end
-
         on :message, "hello" do |m|
-          m.reply "Hello, #{m.user.nick}"
+          m.reply "Hello, #{m.user.nick}."
           m.reply bots[bot_name]['greeting']
+          current = bots[bot_name]['current_hack']
+          # m.reply bots[bot_name]['hacks'].to_s
+
+          # prompt for the first attack
+          m.reply bots[bot_name]['hacks'][current]['prompt']
+          m.reply "When you are ready, simply say '#{bots[bot_name]['hacks'][current]['trigger_message']}'."
+
         end
 
+        # TODO: use trigger_message
+        on :message, "ready" do |m|
+          m.reply 'Ok. Gaining shell access, and running post command...'
+          current = bots[bot_name]['current_hack']
+          # cmd_output = `#{bots[bot_name]['hacks'][current]['get_shell']} << `
+
+          shell_cmd = bots[bot_name]['hacks'][current]['get_shell']
+          Print.debug shell_cmd
+
+          Open3.popen2e(shell_cmd) do |stdin, stdout_err|
+
+            # check whether we have shell by echoing "test"
+            sleep(1)
+            stdin.puts "echo test\n"
+            sleep(1)
+            line = stdout_err.gets.chomp()
+            if line == "test"
+              m.reply 'Shell successful...'
+            else
+              m.reply bots[bot_name]['hacks'][current]['shell_fail_message']
+            end
+
+
+
+            # answer = gets.chomp()
+            stdin.puts "echo answer"
+
+
+            # threads.each{|t| t.join()} #in order to cleanup when you're done.
+          end
+          m.reply "line end"
+
+          # Open3.pipeline_rw("sort", "cat -n") {|stdin, stdout, wait_thrs|
+          #   stdin.puts "foo"
+          #   stdin.puts "bar"
+          #   stdin.puts "baz"
+          #   stdin.close     # send EOF to sort.
+          #   out = stdout.read   #=> "     1\tbar\n     2\tbaz\n     3\tfoo\n"
+          # }
+          # m.reply out
+
+        end
 
       end
     end
@@ -77,7 +131,7 @@ end
 
 def start_bots(bots)
   bots.each do |bot_name, bot|
-    print "starting #{bot_name}\n"
+    Print.std "Starting bot: #{bot_name}\n"
     bot['bot'].start
   end
 end
