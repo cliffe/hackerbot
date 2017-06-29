@@ -101,7 +101,19 @@ def read_bots
               m.reply bots[bot_name]['hacks'][current]['shell_fail_message']
             end
 
+            post_cmd = bots[bot_name]['hacks'][current]['post_command']
+            if post_cmd
+              stdin.puts "#{post_cmd}\n"
+            end
 
+            sleep(1)
+            line = stdout_err.gets.chomp()
+            bots[bot_name]['hacks'][current]['condition'].each do |condition|
+              if condition.key?('output_contains')
+                # TODO
+                # if line =~ /condition['output_contains']/
+              end
+            end
 
             # answer = gets.chomp()
             stdin.puts "echo answer"
