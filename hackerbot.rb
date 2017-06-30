@@ -8,10 +8,7 @@ def read_bots
   bots = {}
   Dir.glob("config/*.xml").each do |file|
     print "#{file}"
-    module_filename = nil
-    #
-    # Print.verbose "Reading #{module_type}: #{module_path}"
-    # doc, xsd = nil
+
     begin
       doc = Nokogiri::XML(File.read(file))
     rescue
@@ -56,27 +53,26 @@ def read_bots
       bots[bot_name]['bot'] = Cinch::Bot.new do
         configure do |c|
           c.nick = bot_name
-          c.server = "172.28.128.3" # "irc.freenode.org" TODO
-          c.channels = ["#hackerbottesting"]
+          c.server = 'localhost' # "irc.freenode.org" TODO
+          c.channels = ['#hackerbottesting']
         end
 
-        on :message, "hello" do |m|
+        on :message, 'hello' do |m|
           m.reply "Hello, #{m.user.nick}."
           m.reply bots[bot_name]['greeting']
           current = bots[bot_name]['current_hack']
-          # m.reply bots[bot_name]['hacks'].to_s
 
           # prompt for the first attack
           m.reply bots[bot_name]['hacks'][current]['prompt']
           m.reply "When you are ready, simply say 'ready'."
         end
 
-        on :message, "help" do |m|
+        on :message, 'help' do |m|
           m.reply "Hello, #{m.user.nick}."
           m.reply "I am waiting for you to say 'ready', 'next', or 'previous'"
         end
 
-        on :message, "next" do |m|
+        on :message, 'next' do |m|
           m.reply "Ok, I'll do what I can to move things along..."
 
           # TODO: remove this repetition (move to function?)
@@ -95,7 +91,30 @@ def read_bots
 
         end
 
-        on :message, "ready" do |m|
+        on :message, 'previous' do |m|
+          m.reply "Ok, I'll do what I can to move things along..."
+
+          # is this the last one?
+          if bots[bot_name]['current_hack'] > 0
+            bots[bot_name]['current_hack'] -= 1
+            current = bots[bot_name]['current_hack']
+
+            # prompt for current hack
+            m.reply bots[bot_name]['hacks'][current]['prompt']
+            m.reply "When you are ready, simply say 'ready'."
+
+          else
+            m.reply 'You are back to the beginning...'
+          end
+
+        end
+
+        on :message, 'list' do |m|
+
+
+        end
+
+        on :message, 'ready' do |m|
           m.reply 'Ok. Gaining shell access, and running post command...'
           current = bots[bot_name]['current_hack']
           # cmd_output = `#{bots[bot_name]['hacks'][current]['get_shell']} << `
@@ -104,7 +123,6 @@ def read_bots
           Print.debug shell_cmd
 
           Open3.popen2e(shell_cmd) do |stdin, stdout_err|
-
             # check whether we have shell by echoing "test"
             sleep(1)
             stdin.puts "echo shelltest\n"
@@ -180,10 +198,7 @@ def read_bots
 
           end
           m.reply "Let me know when you are 'ready', if you are ready to move on to another attack, say 'next', or 'previous' and I'll move things along"
-
-
         end
-
       end
     end
   end
