@@ -8,52 +8,54 @@
 	<greeting>The blackhat hacking group Empir3 are about to hack your system. I'll do what I can hold them off, but you are going to have to work with me to protect yourself. I'll cough up some flags if you work with me.</greeting>
 
 	<hack>
-		<prompt>An attempt to delete /tmp/1 is coming. Stop the attack using access controls.</prompt>
-		<trigger_message>ready</trigger_message>
-		<!--<trigger-timer></trigger-timer>-->
+		<prompt>An attempt to delete /tmp/test/1 is coming. Stop the attack using access controls.</prompt>
 
 		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 		<get_shell>bash</get_shell>
-		<shell_fail_message>Failed to get shell... You need to let us in.</shell_fail_message>
-		<post_command>rm /tmp/1</post_command>
+		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>rm /tmp/test/1; echo $?</post_command>
 		<condition>
 			<output_contains>Permission</output_contains>
-			<message>flag{yay1!}</message>
+			<message>:) Well done! flag{yay1!}</message>
+			<trigger_next>true</trigger_next>
+		</condition>
+		<condition>
+			<output_equals>0</output_equals>
+			<message>:( We managed to delete your file! You need to use access controls to protect the file.</message>
 		</condition>
 		<condition>
 			<output_contains>No such file or directory</output_contains>
-			<message>The file should exist!</message>
+			<message>:( The file should exist!</message>
 		</condition>
 		<else_condition>
-			<message>Something was not right...</message>
+			<message>:( Something was not right...</message>
 		</else_condition>
-
-
 
 	</hack>
 
 	<hack>
-		<prompt>An attempt to delete /tmp/2 is coming. Stop the attack using access controls.</prompt>
-		<trigger-message>hack1</trigger-message>
-		<!--<trigger-timer></trigger-timer>-->
-		<attack>
-			<!--ssh -oStrictHostKeyChecking=no control@localhost -->
-			<get_shell>bash</get_shell>
-			<shell_fail_message>Failed to get shell... You need to let us in.</shell_fail_message>
-			<post_command>rm /tmp/1</post_command>
-			<condition>
-				<output_contains>Permission</output_contains>
-				<message>flag{yay2!}</message>
-			</condition>
-			<condition>
-				<output_contains>No such file or directory</output_contains>
-				<message>The file should exist!</message>
-			</condition>
-			<else_condition>
-				<message>Something was not right...</message>
-			</else_condition>
+		<prompt>An attempt to delete /tmp/test/2 is coming. Stop the attack using access controls.</prompt>
 
-		</attack>
+		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+		<get_shell>bash</get_shell>
+		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>rm /tmp/test/2; echo $?</post_command>
+		<condition>
+			<output_contains>Permission</output_contains>
+			<message>:) Well done! flag{yay1!}</message>
+			<trigger_next>true</trigger_next>
+		</condition>
+		<condition>
+			<output_equals>0</output_equals>
+			<message>:( We managed to delete your file! You need to use access controls to protect the file.</message>
+		</condition>
+		<condition>
+			<output_contains>No such file or directory</output_contains>
+			<message>:( The file should exist!</message>
+		</condition>
+		<else_condition>
+			<message>:( Something was not right...</message>
+		</else_condition>
 
 	</hack>
 

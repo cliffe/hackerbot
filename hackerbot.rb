@@ -57,9 +57,6 @@ def read_bots
 
       Print.debug bots[bot_name]['hacks'].to_s
 
-      # for each dothis TODO!
-      # bots[bot_name]['dothis'][prompt] =
-
       bots[bot_name]['bot'] = Cinch::Bot.new do
         configure do |c|
           c.nick = bot_name
@@ -75,11 +72,33 @@ def read_bots
 
           # prompt for the first attack
           m.reply bots[bot_name]['hacks'][current]['prompt']
-          m.reply "When you are ready, simply say '#{bots[bot_name]['hacks'][current]['trigger_message']}'."
+          m.reply "When you are ready, simply say 'ready'."
+        end
+
+        on :message, "help" do |m|
+          m.reply "Hello, #{m.user.nick}."
+          m.reply "I am waiting for you to say 'ready', 'next', or 'previous'"
+        end
+
+        on :message, "next" do |m|
+          m.reply "Ok, I'll do what I can to move things along..."
+
+          # TODO: remove this repetition (move to function?)
+          # is this the last one?
+          if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
+            bots[bot_name]['current_hack'] += 1
+            current = bots[bot_name]['current_hack']
+
+            # prompt for current hack
+            m.reply bots[bot_name]['hacks'][current]['prompt']
+            m.reply "When you are ready, simply say 'ready'."
+
+          else
+            m.reply "That's the last attack for now. You can rest easy, until next time..."
+          end
 
         end
 
-        # TODO: use trigger_message
         on :message, "ready" do |m|
           m.reply 'Ok. Gaining shell access, and running post command...'
           current = bots[bot_name]['current_hack']
@@ -92,50 +111,80 @@ def read_bots
 
             # check whether we have shell by echoing "test"
             sleep(1)
-            stdin.puts "echo test\n"
+            stdin.puts "echo shelltest\n"
             sleep(1)
             line = stdout_err.gets.chomp()
-            if line == "test"
-              m.reply 'Shell successful...'
+            if line == "shelltest"
+              m.reply 'We are in to your system...'
+
+              post_cmd = bots[bot_name]['hacks'][current]['post_command']
+              if post_cmd
+                stdin.puts "#{post_cmd}\n"
+              end
+
+              # sleep(1)
+              line = stdout_err.gets.chomp()
+              m.reply line
+              condition_met = false
+              bots[bot_name]['hacks'][current]['condition'].each do |condition|
+                if !condition_met && condition.key?('output_contains') && line.include?(condition['output_contains'])
+                  condition_met = true
+                  # m.reply "(#{line}) contains (#{condition['output_contains']})"
+                  # if line =~ /condition['output_contains']/
+                  m.reply "#{condition['message']}"
+                  if condition.key?('trigger_next')
+                    # is this the last one?
+                    if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
+                      bots[bot_name]['current_hack'] += 1
+                      current = bots[bot_name]['current_hack']
+
+                      sleep(1)
+                      # prompt for current hack
+                      m.reply bots[bot_name]['hacks'][current]['prompt']
+
+                    else
+                      m.reply "That's the last attack for now. You can rest easy, until next time..."
+                    end
+                  end
+                end
+                if !condition_met && condition.key?('output_equals') && line == condition['output_equals']
+                  condition_met = true
+                  # m.reply "(#{line}) equals (#{condition['output_contains']})"
+                  # if line =~ /condition['output_contains']/
+                  m.reply "#{condition['message']}"
+
+                  # TODO: remove this repetition (move to function?)
+                  if condition.key?('trigger_next')
+                    # is this the last one?
+                    if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
+                      bots[bot_name]['current_hack'] += 1
+                      current = bots[bot_name]['current_hack']
+
+                      sleep(1)
+                      # prompt for current hack
+                      m.reply bots[bot_name]['hacks'][current]['prompt']
+
+                    else
+                      m.reply "That's the last attack for now. You can rest easy, until next time..."
+                    end
+                  end
+
+                end
+              end
+              unless condition_met
+                if bots[bot_name]['hacks'][current]['else_condition']
+                  m.reply bots[bot_name]['hacks'][current]['else_condition']['message']
+                end
+              end
+
+
             else
               m.reply bots[bot_name]['hacks'][current]['shell_fail_message']
             end
 
-            post_cmd = bots[bot_name]['hacks'][current]['post_command']
-            if post_cmd
-              stdin.puts "#{post_cmd}\n"
-            end
-
-            sleep(1)
-            line = stdout_err.gets.chomp()
-            bots[bot_name]['hacks'][current]['condition'].each do |condition|
-              if condition.key?('output_contains')
-                # TODO
-                m.reply "testing if #{line} contains #{condition['output_contains']}"
-                # if line =~ /condition['output_contains']/
-                if true # TODO
-                  m.reply "#{condition['message']}"
-                end
-              end
-              # TODO else condition
-            end
-
-            # answer = gets.chomp()
-            stdin.puts "echo answer"
-
-
-            # threads.each{|t| t.join()} #in order to cleanup when you're done.
           end
-          m.reply "line end"
+          m.reply "Let me know when you are 'ready', if you are ready to move on to another attack, say 'next', or 'previous' and I'll move things along"
 
-          # Open3.pipeline_rw("sort", "cat -n") {|stdin, stdout, wait_thrs|
-          #   stdin.puts "foo"
-          #   stdin.puts "bar"
-          #   stdin.puts "baz"
-          #   stdin.close     # send EOF to sort.
-          #   out = stdout.read   #=> "     1\tbar\n     2\tbaz\n     3\tfoo\n"
-          # }
-          # m.reply out
 
         end
 
@@ -155,4 +204,3 @@ end
 
 bots = read_bots
 start_bots(bots)
-# bot.start
