@@ -5,7 +5,18 @@
 
 	<name>Hackerbot</name>
 
-	<greeting>The blackhat hacking group Empir3 are about to hack your system. I'll do what I can hold them off, but you are going to have to work with me to protect yourself. I'll cough up some flags if you work with me.</greeting>
+	<messages>
+		<greeting>The blackhat hacking group Empir3 are about to hack your system. I'll do what I can hold them off, but you are going to have to work with me to protect yourself. I'll cough up some flags if you work with me.</greeting>
+		<say_ready>When you are ready, simply say 'ready'.</say_ready>
+		<help>I am waiting for you to say 'ready', 'next', 'previous', or 'list'</help>
+		<next>Ok, I'll do what I can to move things along...</next>
+		<previous>Ok, I'll do what I can to back things up...</previous>
+		<last_attack>That's the last attack for now. You can rest easy, until next time...</last_attack>
+		<first_attack>You are back to the beginning...</first_attack>
+		<getting_shell>Ok. Gaining shell access, and running post command...</getting_shell>
+		<got_shell>We are in to your system...</got_shell>
+		<repeat>Let me know when you are 'ready', if you are ready to move on to another attack, say 'next', or 'previous' and I'll move things along</repeat>
+	</messages>
 
 	<hack>
 		<prompt>An attempt to delete /tmp/test/1 is coming. Stop the attack using access controls.</prompt>

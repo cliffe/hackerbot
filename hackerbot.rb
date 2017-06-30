@@ -22,12 +22,12 @@ def read_bots
     # begin
     #   xsd = Nokogiri::XML::Schema(File.read(schema_file))
     #   xsd.validate(doc).each do |error|
-    #     Print.err "Error in #{module_type} metadata file (#{file}):"
+    #     Print.err "Error in bot config file (#{file}):"
     #     Print.err '    ' + error.message
     #     exit
     #   end
     # rescue Exception => e
-    #   Print.err "Failed to validate #{module_type} metadata file (#{file}): against schema (#{schema_file})"
+    #   Print.err "Failed to validate bot config file (#{file}): against schema (#{schema_file})"
     #   Print.err e.message
     #   exit
     # end
@@ -40,11 +40,14 @@ def read_bots
       bot_name = hackerbot.at_xpath('name').text
       Print.debug bot_name
       bots[bot_name] = {}
-      bots[bot_name]['greeting'] = hackerbot.at_xpath('greeting').text
+      # bots[bot_name]['greeting'] = hackerbot.at_xpath('greeting').text
+
+      bots[bot_name]['messages'] = Nori.new.parse(hackerbot.at_xpath('//messages').to_s)['messages']
+      Print.debug bots[bot_name]['messages'].to_s
+
       bots[bot_name]['hacks'] = []
       hackerbot.xpath('//hack').each do |hack|
         bots[bot_name]['hacks'].push Nori.new.parse(hack.to_s)['hack']
-
       end
       bots[bot_name]['current_hack'] = 0
 
@@ -57,25 +60,23 @@ def read_bots
           c.channels = ['#hackerbottesting']
         end
 
-        on :message, 'hello' do |m|
+        on :message, /hello/i do |m|
           m.reply "Hello, #{m.user.nick}."
           m.reply bots[bot_name]['greeting']
           current = bots[bot_name]['current_hack']
 
           # prompt for the first attack
           m.reply bots[bot_name]['hacks'][current]['prompt']
-          m.reply "When you are ready, simply say 'ready'."
+          m.reply bots[bot_name]['messages']['say_ready']
         end
 
-        on :message, 'help' do |m|
-          m.reply "Hello, #{m.user.nick}."
-          m.reply "I am waiting for you to say 'ready', 'next', or 'previous'"
+        on :message, /help/i do |m|
+          m.reply bots[bot_name]['messages']['help']
         end
 
         on :message, 'next' do |m|
-          m.reply "Ok, I'll do what I can to move things along..."
+          m.reply bots[bot_name]['messages']['next']
 
-          # TODO: remove this repetition (move to function?)
           # is this the last one?
           if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
             bots[bot_name]['current_hack'] += 1
@@ -83,16 +84,16 @@ def read_bots
 
             # prompt for current hack
             m.reply bots[bot_name]['hacks'][current]['prompt']
-            m.reply "When you are ready, simply say 'ready'."
+            m.reply bots[bot_name]['messages']['say_ready']
 
           else
-            m.reply "That's the last attack for now. You can rest easy, until next time..."
+            m.reply bots[bot_name]['messages']['last_attack']
           end
 
         end
 
         on :message, 'previous' do |m|
-          m.reply "Ok, I'll do what I can to move things along..."
+          m.reply bots[bot_name]['messages']['previous']
 
           # is this the last one?
           if bots[bot_name]['current_hack'] > 0
@@ -101,21 +102,27 @@ def read_bots
 
             # prompt for current hack
             m.reply bots[bot_name]['hacks'][current]['prompt']
-            m.reply "When you are ready, simply say 'ready'."
+            m.reply bots[bot_name]['messages']['say_ready']
 
           else
-            m.reply 'You are back to the beginning...'
+            m.reply bots[bot_name]['messages']['first_attack']
           end
 
         end
 
         on :message, 'list' do |m|
+          bots[bot_name]['hacks'].each_with_index {|val, index|
+            uptohere = ""
+            if index == bots[bot_name]['current_hack']
+              uptohere = "--> "
+            end
 
-
+            m.reply "#{uptohere}attack #{index+1}: #{val['prompt']}"
+          }
         end
 
         on :message, 'ready' do |m|
-          m.reply 'Ok. Gaining shell access, and running post command...'
+          m.reply bots[bot_name]['messages']['getting_shell']
           current = bots[bot_name]['current_hack']
           # cmd_output = `#{bots[bot_name]['hacks'][current]['get_shell']} << `
 
@@ -129,7 +136,7 @@ def read_bots
             sleep(1)
             line = stdout_err.gets.chomp()
             if line == "shelltest"
-              m.reply 'We are in to your system...'
+              m.reply bots[bot_name]['messages']['got_shell']
 
               post_cmd = bots[bot_name]['hacks'][current]['post_command']
               if post_cmd
@@ -138,7 +145,7 @@ def read_bots
 
               # sleep(1)
               line = stdout_err.gets.chomp()
-              m.reply line
+              m.reply "FYI: #{line}"
               condition_met = false
               bots[bot_name]['hacks'][current]['condition'].each do |condition|
                 if !condition_met && condition.key?('output_contains') && line.include?(condition['output_contains'])
@@ -157,7 +164,7 @@ def read_bots
                       m.reply bots[bot_name]['hacks'][current]['prompt']
 
                     else
-                      m.reply "That's the last attack for now. You can rest easy, until next time..."
+                      m.reply bots[bot_name]['messages']['last_attack']
                     end
                   end
                 end
@@ -167,7 +174,6 @@ def read_bots
                   # if line =~ /condition['output_contains']/
                   m.reply "#{condition['message']}"
 
-                  # TODO: remove this repetition (move to function?)
                   if condition.key?('trigger_next')
                     # is this the last one?
                     if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
@@ -179,7 +185,7 @@ def read_bots
                       m.reply bots[bot_name]['hacks'][current]['prompt']
 
                     else
-                      m.reply "That's the last attack for now. You can rest easy, until next time..."
+                      m.reply bots[bot_name]['messages']['last_attack']
                     end
                   end
 
@@ -197,7 +203,7 @@ def read_bots
             end
 
           end
-          m.reply "Let me know when you are 'ready', if you are ready to move on to another attack, say 'next', or 'previous' and I'll move things along"
+          m.reply bots[bot_name]['messages']['repeat']
         end
       end
     end
