@@ -21,7 +21,7 @@ def read_bots
       exit
     end
     #
-    # # validate scenario XML against schema
+    # # TODO validate scenario XML against schema
     # begin
     #   xsd = Nokogiri::XML::Schema(File.read(schema_file))
     #   xsd.validate(doc).each do |error|
@@ -37,11 +37,7 @@ def read_bots
 
     # remove xml namespaces for ease of processing
     doc.remove_namespaces!
-    #
-    # new_module = Module.new(module_type)
-    # # save module path (and as an attribute for filtering)
-    # new_module.module_path = module_path
-    # new_module.attributes['module_path'] = [module_path]
+
     doc.xpath('/hackerbot').each_with_index do |hackerbot|
 
       bot_name = hackerbot.at_xpath('name').text
