@@ -15,7 +15,7 @@
 		<first_attack>You are back to the beginning...</first_attack>
 		<getting_shell>Ok. Gaining shell access, and running post command...</getting_shell>
 		<got_shell>We are in to your system...</got_shell>
-		<repeat>Let me know when you are 'ready', if you are ready to move on to another attack, say 'next', or 'previous' and I'll move things along</repeat>
+		<repeat>Let me know when you are 'ready' to try again, if you want to move on to another attack, say 'next', or 'previous' and I'll move things along</repeat>
 	</messages>
 
 	<hack>

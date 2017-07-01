@@ -144,7 +144,9 @@ def read_bots
               end
 
               # sleep(1)
-              line = stdout_err.gets.chomp()
+              stdin.close # no more input, end the program
+              line = stdout_err.read.chomp()
+
               m.reply "FYI: #{line}"
               condition_met = false
               bots[bot_name]['hacks'][current]['condition'].each do |condition|
