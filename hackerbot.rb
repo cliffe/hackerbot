@@ -128,12 +128,22 @@ def read_bots
 
         # backup to
         on :message do |m|
+          Print.debug "test1"
 
-          reaction = bots[bot_name]['chat_ai'].get_reaction(m.message)
+          begin
+            reaction = bots[bot_name]['chat_ai'].get_reaction(m.message)
+
+          rescue Exception => e
+            puts e.message
+            puts e.backtrace.inspect
+            reaction = ""
+          end
+          Print.debug "test2"
           if reaction
             m.reply reaction
           else
-            if m.message =~ /\?$/
+            Print.debug reaction
+            if m.message.include?('?')
               m.reply bots[bot_name]['messages']['non_answer']
             end
           end
