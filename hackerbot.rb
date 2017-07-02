@@ -3,6 +3,7 @@ require 'nokogiri'
 require 'nori'
 require './print.rb'
 require 'open3'
+require 'programr'
 
 def read_bots
   bots = {}
@@ -40,7 +41,10 @@ def read_bots
       bot_name = hackerbot.at_xpath('name').text
       Print.debug bot_name
       bots[bot_name] = {}
-      # bots[bot_name]['greeting'] = hackerbot.at_xpath('greeting').text
+
+      chatbot_rules = hackerbot.at_xpath('AIML_chatbot_rules').text
+      bots[bot_name]['chat_ai'] = ProgramR::Facade.new
+      bots[bot_name]['chat_ai'].learn([chatbot_rules])
 
       bots[bot_name]['messages'] = Nori.new.parse(hackerbot.at_xpath('//messages').to_s)['messages']
       Print.debug bots[bot_name]['messages'].to_s
@@ -120,6 +124,21 @@ def read_bots
             m.reply "#{uptohere}attack #{index+1}: #{val['prompt']}"
           }
         end
+
+        # backup to
+        on :message do |m|
+
+          reaction = bots[bot_name]['chat_ai'].get_reaction(m.message)
+          if reaction
+            m.reply reaction
+          else
+            if m.message =~ /\?$/
+              m.reply bots[bot_name]['messages']['non_answer']
+            end
+          end
+
+        end
+
 
         on :message, 'ready' do |m|
           m.reply bots[bot_name]['messages']['getting_shell']
