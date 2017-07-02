@@ -4,6 +4,7 @@
                xsi:schemaLocation="http://www.github/cliffe/SecGen/hackerbot">
 
 	<name>Hackerbot</name>
+
 	<AIML_chatbot_rules>config/AIML</AIML_chatbot_rules>
 
 	<messages>
