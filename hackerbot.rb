@@ -42,7 +42,6 @@ def read_bots
       Print.debug bot_name
       bots[bot_name] = {}
 
-      # TODO: load chatbot in another thread, and don't use chatbot responses until loaded (take a while to load)
       chatbot_rules = hackerbot.at_xpath('AIML_chatbot_rules').text
       bots[bot_name]['chat_ai'] = ProgramR::Facade.new
       bots[bot_name]['chat_ai'].learn([chatbot_rules])
@@ -126,7 +125,7 @@ def read_bots
           }
         end
 
-        # backup to
+        # fallback to AIML ALICE chatbot responses
         on :message do |m|
           Print.debug "test1"
 
