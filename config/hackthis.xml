@@ -112,11 +112,10 @@
 		<post_command>echo 'your logs are gone!' > /tmp/test/log1; echo 'damn!' >> /tmp/test/log1; tail /tmp/test/log1</post_command>
 		<condition>
 			<output_not_contains>damn!</output_not_contains>
-			<message>:( You stopped anything from being appended to the file.</message>
+			<message>:( You stopped anything from being appended to the file. What kind of log file do you think this is?</message>
 		</condition>
 		<condition>
 			<output_contains>Operation not permitted</output_contains>
-			<!--TODO <output_contains>damn!</output_contains>-->
 			<message>:) Well done! flag{yay1!}</message>
 			<trigger_next>true</trigger_next>
 		</condition>
