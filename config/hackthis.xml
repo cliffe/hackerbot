@@ -27,7 +27,7 @@
 		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 		<get_shell>bash</get_shell>
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
-		<post_command>rm /tmp/test/1; echo $?</post_command>
+		<post_command>rm --interactive=never /tmp/test/1; echo $?</post_command>
 		<condition>
 			<output_contains>Permission</output_contains>
 			<message>:) Well done! flag{yay1!}</message>
@@ -53,7 +53,7 @@
 		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 		<get_shell>bash</get_shell>
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
-		<post_command>rm /tmp/test/2; echo $?</post_command>
+		<post_command>rm --interactive=never /tmp/test/2; echo $?</post_command>
 		<condition>
 			<output_contains>Permission</output_contains>
 			<message>:) Well done! flag{yay1!}</message>
@@ -72,5 +72,68 @@
 		</else_condition>
 
 	</hack>
+
+	<hack>
+		<!--<topic>Protecting integrity with file attributes</topic>-->
+		<prompt>An attempt to delete /tmp/test/log1 is coming. Stop the attack using file attributes.</prompt>
+
+		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+		<get_shell>bash</get_shell>
+		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>rm --interactive=never /tmp/test/log1; echo $?</post_command>
+		<condition>
+			<output_contains>Operation not permitted</output_contains>
+			<message>:) Well done! flag{yay1!}</message>
+			<trigger_next>true</trigger_next>
+		</condition>
+		<condition> <!-- TODO: chmod to defeat the defense -->
+			<output_contains>Permission denied</output_contains>
+			<message>:( You did protect the file, but not using file attributes.</message>
+		</condition>
+		<condition>
+			<output_equals>0</output_equals>
+			<message>:( We managed to delete your file! You need to use file attributes to protect the file.</message>
+		</condition>
+		<condition>
+			<output_contains>No such file or directory</output_contains>
+			<message>:( The file should exist!</message>
+		</condition>
+		<else_condition>
+			<message>:( Something was not right...</message>
+		</else_condition>
+
+	<hack>
+		<!--<topic>Protecting integrity with file attributes</topic>-->
+		<prompt>An attempt to overwrite /tmp/test/log1 is coming. Stop the attack by making the file append only.</prompt>
+
+		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+		<get_shell>bash</get_shell>
+		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>echo 'your logs are gone!' > /tmp/test/log1; echo 'damn!' >> /tmp/test/log1; tail /tmp/test/log1</post_command>
+		<condition>
+			<output_not_contains>damn!</output_not_contains>
+			<message>:( You stopped anything from being appended to the file.</message>
+		</condition>
+		<condition>
+			<output_contains>Operation not permitted</output_contains>
+			<!--TODO <output_contains>damn!</output_contains>-->
+			<message>:) Well done! flag{yay1!}</message>
+			<trigger_next>true</trigger_next>
+		</condition>
+		<condition>
+			<output_equals>0</output_equals>
+			<message>:( We managed to delete your file! You need to use file attributes to protect the file.</message>
+		</condition>
+		<condition>
+			<output_contains>No such file or directory</output_contains>
+			<message>:( The file should exist!</message>
+		</condition>
+		<else_condition>
+			<message>:( Something was not right...</message>
+		</else_condition>
+
+	</hack>
+
+
 
 </hackerbot> 

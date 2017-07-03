@@ -60,7 +60,7 @@ def read_bots
       bots[bot_name]['bot'] = Cinch::Bot.new do
         configure do |c|
           c.nick = bot_name
-          c.server = 'localhost' # "irc.freenode.org" TODO
+          c.server = 'localhost'
           c.channels = ['#hackerbottesting']
         end
 
