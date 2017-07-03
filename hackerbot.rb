@@ -43,6 +43,7 @@ def read_bots
       bots[bot_name] = {}
 
       chatbot_rules = hackerbot.at_xpath('AIML_chatbot_rules').text
+      Print.debug "Loading chat_ai from #{chatbot_rules}"
       bots[bot_name]['chat_ai'] = ProgramR::Facade.new
       bots[bot_name]['chat_ai'].learn([chatbot_rules])
 
@@ -116,9 +117,9 @@ def read_bots
 
         on :message, 'list' do |m|
           bots[bot_name]['hacks'].each_with_index {|val, index|
-            uptohere = ""
+            uptohere = ''
             if index == bots[bot_name]['current_hack']
-              uptohere = "--> "
+              uptohere = '--> '
             end
 
             m.reply "#{uptohere}attack #{index+1}: #{val['prompt']}"
@@ -129,13 +130,16 @@ def read_bots
         on :message do |m|
           Print.debug "test1"
 
+          # Only process messages not related to controlling attacks
+          return if m.message =~ /help|next|previous|list/
+
           begin
             reaction = bots[bot_name]['chat_ai'].get_reaction(m.message)
 
           rescue Exception => e
             puts e.message
             puts e.backtrace.inspect
-            reaction = ""
+            reaction = ''
           end
           Print.debug "test2"
           if reaction
@@ -179,47 +183,31 @@ def read_bots
               m.reply "FYI: #{line}"
               condition_met = false
               bots[bot_name]['hacks'][current]['condition'].each do |condition|
-                if !condition_met && condition.key?('output_contains') && line.include?(condition['output_contains'])
+                if !condition_met && condition.key?('output_matches') && line =~ /#{condition['output_matches']}/
                   condition_met = true
-                  # m.reply "(#{line}) contains (#{condition['output_contains']})"
-                  # if line =~ /condition['output_contains']/
                   m.reply "#{condition['message']}"
-                  if condition.key?('trigger_next')
-                    # is this the last one?
-                    if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
-                      bots[bot_name]['current_hack'] += 1
-                      current = bots[bot_name]['current_hack']
-
-                      sleep(1)
-                      # prompt for current hack
-                      m.reply bots[bot_name]['hacks'][current]['prompt']
-
-                    else
-                      m.reply bots[bot_name]['messages']['last_attack']
-                    end
-                  end
+                end
+                if !condition_met && condition.key?('output_not_matches') && line !~ /#{condition['output_not_matches']}/
+                  condition_met = true
+                  m.reply "#{condition['message']}"
                 end
                 if !condition_met && condition.key?('output_equals') && line == condition['output_equals']
                   condition_met = true
-                  # m.reply "(#{line}) equals (#{condition['output_contains']})"
-                  # if line =~ /condition['output_contains']/
                   m.reply "#{condition['message']}"
+                end
 
-                  if condition.key?('trigger_next')
-                    # is this the last one?
-                    if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
-                      bots[bot_name]['current_hack'] += 1
-                      current = bots[bot_name]['current_hack']
+                if condition_met && condition.key?('trigger_next')
+                  # is this the last one?
+                  if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
+                    bots[bot_name]['current_hack'] += 1
+                    current = bots[bot_name]['current_hack']
 
-                      sleep(1)
-                      # prompt for current hack
-                      m.reply bots[bot_name]['hacks'][current]['prompt']
-
-                    else
-                      m.reply bots[bot_name]['messages']['last_attack']
-                    end
+                    sleep(1)
+                    # prompt for current hack
+                    m.reply bots[bot_name]['hacks'][current]['prompt']
+                  else
+                    m.reply bots[bot_name]['messages']['last_attack']
                   end
-
                 end
               end
               unless condition_met

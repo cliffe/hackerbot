@@ -13,11 +13,11 @@
 		<help>I am waiting for you to say 'ready', 'next', 'previous', or 'list'</help>
 		<next>Ok, I'll do what I can to move things along...</next>
 		<previous>Ok, I'll do what I can to back things up...</previous>
-		<last_attack>That's the last attack for now. You can rest easy, until next time...</last_attack>
+		<last_attack>That was the last attack for now. You can rest easy, until next time... (End.)</last_attack>
 		<first_attack>You are back to the beginning...</first_attack>
 		<getting_shell>Ok. Gaining shell access, and running post command...</getting_shell>
 		<got_shell>We are in to your system...</got_shell>
-		<repeat>Let me know when you are 'ready' to try again, if you want to move on to another attack, say 'next', or 'previous' and I'll move things along</repeat>
+		<repeat>Let me know when you are 'ready', if you want to move on to another attack, say 'next', or 'previous' and I'll move things along</repeat>
 		<non_answer>Wouldn't you like to know.</non_answer>
 	</messages>
 
@@ -29,7 +29,7 @@
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
 		<post_command>rm --interactive=never /tmp/test/1; echo $?</post_command>
 		<condition>
-			<output_contains>Permission</output_contains>
+			<output_matches>Permission denied|Operation not permitted</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
 			<trigger_next>true</trigger_next>
 		</condition>
@@ -38,7 +38,7 @@
 			<message>:( We managed to delete your file! You need to use access controls to protect the file.</message>
 		</condition>
 		<condition>
-			<output_contains>No such file or directory</output_contains>
+			<output_matches>No such file or directory</output_matches>
 			<message>:( The file should exist!</message>
 		</condition>
 		<else_condition>
@@ -55,7 +55,7 @@
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
 		<post_command>rm --interactive=never /tmp/test/2; echo $?</post_command>
 		<condition>
-			<output_contains>Permission</output_contains>
+			<output_matches>Permission denied</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
 			<trigger_next>true</trigger_next>
 		</condition>
@@ -64,7 +64,7 @@
 			<message>:( We managed to delete your file! You need to use access controls to protect the file.</message>
 		</condition>
 		<condition>
-			<output_contains>No such file or directory</output_contains>
+			<output_matches>No such file or directory</output_matches>
 			<message>:( The file should exist!</message>
 		</condition>
 		<else_condition>
@@ -82,12 +82,12 @@
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
 		<post_command>rm --interactive=never /tmp/test/log1; echo $?</post_command>
 		<condition>
-			<output_contains>Operation not permitted</output_contains>
+			<output_matches>Operation not permitted</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
 			<trigger_next>true</trigger_next>
 		</condition>
 		<condition> <!-- TODO: chmod to defeat the defense -->
-			<output_contains>Permission denied</output_contains>
+			<output_matches>Permission denied</output_matches>
 			<message>:( You did protect the file, but not using file attributes.</message>
 		</condition>
 		<condition>
@@ -95,13 +95,13 @@
 			<message>:( We managed to delete your file! You need to use file attributes to protect the file.</message>
 		</condition>
 		<condition>
-			<output_contains>No such file or directory</output_contains>
+			<output_matches>No such file or directory</output_matches>
 			<message>:( The file should exist!</message>
 		</condition>
 		<else_condition>
 			<message>:( Something was not right...</message>
 		</else_condition>
-
+	</hack>
 	<hack>
 		<!--<topic>Protecting integrity with file attributes</topic>-->
 		<prompt>An attempt to overwrite /tmp/test/log1 is coming. Stop the attack by making the file append only.</prompt>
@@ -111,21 +111,67 @@
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
 		<post_command>echo 'your logs are gone!' > /tmp/test/log1; echo 'damn!' >> /tmp/test/log1; tail /tmp/test/log1</post_command>
 		<condition>
-			<output_not_contains>damn!</output_not_contains>
+			<output_not_matches>damn!</output_not_matches>
 			<message>:( You stopped anything from being appended to the file. What kind of log file do you think this is?</message>
 		</condition>
 		<condition>
-			<output_contains>Operation not permitted</output_contains>
+			<output_matches>Operation not permitted</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
 			<trigger_next>true</trigger_next>
 		</condition>
 		<condition>
-			<output_equals>0</output_equals>
-			<message>:( We managed to delete your file! You need to use file attributes to protect the file.</message>
+			<output_matches>No such file or directory</output_matches>
+			<message>:( The file should exist!</message>
+		</condition>
+		<else_condition>
+			<message>:( Something was not right...</message>
+		</else_condition>
+	</hack>
+
+	<hack>
+		<!--<topic>Protecting integrity with read-only filesystems</topic>-->
+		<prompt>An attempt to edit a file in /etc is coming. Stop the attack by bind mounting /etc/ as read-only.</prompt>
+
+		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+		<get_shell>bash</get_shell>
+		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>touch /etc/you_were_hacked; adduser yourehacked</post_command>
+		<condition>
+			<output_matches>Read-only file system</output_matches>
+			<message>:) Well done! flag{yay1!}</message>
+			<trigger_next>true</trigger_next>
 		</condition>
 		<condition>
-			<output_contains>No such file or directory</output_contains>
-			<message>:( The file should exist!</message>
+			<output_matches>Permission denied|Operation not permitted</output_matches>
+			<message>:( You stopped the attack, but not by using read only bind mounting...</message>
+		</condition>
+		<else_condition>
+			<message>:( Something was not right...</message>
+		</else_condition>
+	</hack>
+
+	<!--TODO-->
+	<hack>
+		<!--<topic>Detecting changes to resources using backups</topic>-->
+		<prompt>An attempt to add a new user is coming. First, create a backup of /etc/passwd, then find the username by diffing using a backup.</prompt>
+
+		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+		<get_shell>bash</get_shell>
+		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>adduser hackerbot</post_command>
+		<condition>
+			<output_matches>added</output_matches>
+			<message>User added</message>
+			<trigger_next>true</trigger_next>
+			<quiz>
+				<question>What username was created?</question>
+				<answer>hackerbot</answer>
+				<correct_answer>flag{yay!}</correct_answer>
+			</quiz>
+		</condition>
+		<condition>
+			<output_matches>Permission denied|Operation not permitted|Read-only</output_matches>
+			<message>:( You stopped the attack, rather than monitor for changes...</message>
 		</condition>
 		<else_condition>
 			<message>:( Something was not right...</message>
@@ -133,6 +179,4 @@
 
 	</hack>
 
-
-
-</hackerbot> 
+</hackerbot>
