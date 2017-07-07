@@ -72,15 +72,15 @@ def read_bots
 
           # prompt for the first attack
           m.reply bots[bot_name]['hacks'][current]['prompt']
-          m.reply bots[bot_name]['messages']['say_ready']
+          m.reply bots[bot_name]['messages']['say_ready'].sample
         end
 
         on :message, /help/i do |m|
-          m.reply bots[bot_name]['messages']['help']
+          m.reply bots[bot_name]['messages']['help'].sample
         end
 
         on :message, 'next' do |m|
-          m.reply bots[bot_name]['messages']['next']
+          m.reply bots[bot_name]['messages']['next'].sample
 
           # is this the last one?
           if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
@@ -89,16 +89,15 @@ def read_bots
 
             # prompt for current hack
             m.reply bots[bot_name]['hacks'][current]['prompt']
-            m.reply bots[bot_name]['messages']['say_ready']
-
+            m.reply bots[bot_name]['messages']['say_ready'].sample
           else
-            m.reply bots[bot_name]['messages']['last_attack']
+            m.reply bots[bot_name]['messages']['last_attack'].sample
           end
 
         end
 
         on :message, 'previous' do |m|
-          m.reply bots[bot_name]['messages']['previous']
+          m.reply bots[bot_name]['messages']['previous'].sample
 
           # is this the last one?
           if bots[bot_name]['current_hack'] > 0
@@ -107,10 +106,10 @@ def read_bots
 
             # prompt for current hack
             m.reply bots[bot_name]['hacks'][current]['prompt']
-            m.reply bots[bot_name]['messages']['say_ready']
+            m.reply bots[bot_name]['messages']['say_ready'].sample
 
           else
-            m.reply bots[bot_name]['messages']['first_attack']
+            m.reply bots[bot_name]['messages']['first_attack'].sample
           end
 
         end
@@ -147,7 +146,7 @@ def read_bots
           else
             Print.debug reaction
             if m.message.include?('?')
-              m.reply bots[bot_name]['messages']['non_answer']
+              m.reply bots[bot_name]['messages']['non_answer'].sample
             end
           end
 
@@ -155,11 +154,11 @@ def read_bots
 
 
         on :message, 'ready' do |m|
-          m.reply bots[bot_name]['messages']['getting_shell']
+          m.reply bots[bot_name]['messages']['getting_shell'].sample
           current = bots[bot_name]['current_hack']
           # cmd_output = `#{bots[bot_name]['hacks'][current]['get_shell']} << `
 
-          shell_cmd = bots[bot_name]['hacks'][current]['get_shell']
+          shell_cmd = bots[bot_name]['hacks'][current]['get_shell'].sample
           Print.debug shell_cmd
 
           Open3.popen2e(shell_cmd) do |stdin, stdout_err|
@@ -169,7 +168,7 @@ def read_bots
             sleep(1)
             line = stdout_err.gets.chomp()
             if line == "shelltest"
-              m.reply bots[bot_name]['messages']['got_shell']
+              m.reply bots[bot_name]['messages']['got_shell'].sample
 
               post_cmd = bots[bot_name]['hacks'][current]['post_command']
               if post_cmd
@@ -206,7 +205,7 @@ def read_bots
                     # prompt for current hack
                     m.reply bots[bot_name]['hacks'][current]['prompt']
                   else
-                    m.reply bots[bot_name]['messages']['last_attack']
+                    m.reply bots[bot_name]['messages']['last_attack'].sample
                   end
                 end
               end
@@ -222,7 +221,7 @@ def read_bots
             end
 
           end
-          m.reply bots[bot_name]['messages']['repeat']
+          m.reply bots[bot_name]['messages']['repeat'].sample
         end
       end
     end
