@@ -23,7 +23,7 @@
 		<previous>Ok, backing up.</previous>
 		<last_attack>That was the last attack for now. You can rest easy, until next time... (End.)</last_attack>
 		<last_attack>That was the last attack. Game over?</last_attack>
-		<first_attack>You are back to the beginning...</first_attack>
+		<first_attack>You are back to the beginning!</first_attack>
 		<first_attack>This is where it all began.</first_attack>
 		<getting_shell>Ok. Gaining shell access, and running post command...</getting_shell>
 		<getting_shell>Hacking in progress...</getting_shell>
@@ -31,7 +31,7 @@
 		<getting_shell>Here we go...</getting_shell>
 		<got_shell>We are in to your system.</got_shell>
 		<got_shell>You are pwned.</got_shell>
-		<got_shell>Compromised</got_shell>
+		<got_shell>We have shell.</got_shell>
 		<repeat>Let me know when you are 'ready', if you want to move on to another attack, say 'next', or 'previous' and I'll move things along</repeat>
 		<repeat>Say 'ready', 'next', or 'previous'.</repeat>
 		<non_answer>Wouldn't you like to know.</non_answer>

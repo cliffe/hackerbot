@@ -158,15 +158,17 @@ def read_bots
           current = bots[bot_name]['current_hack']
           # cmd_output = `#{bots[bot_name]['hacks'][current]['get_shell']} << `
 
-          shell_cmd = bots[bot_name]['hacks'][current]['get_shell'].sample
+          shell_cmd = bots[bot_name]['hacks'][current]['get_shell']
           Print.debug shell_cmd
 
           Open3.popen2e(shell_cmd) do |stdin, stdout_err|
             # check whether we have shell by echoing "test"
-            sleep(1)
+            # sleep(1)
             stdin.puts "echo shelltest\n"
-            sleep(1)
+            sleep(2)
+            Print.debug "AAAA"
             line = stdout_err.gets.chomp()
+            Print.debug line
             if line == "shelltest"
               m.reply bots[bot_name]['messages']['got_shell'].sample
 

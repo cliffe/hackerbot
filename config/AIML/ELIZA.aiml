@@ -31,7 +31,7 @@
 		</random>
 	</template>
 </category>
-
+<!--
 <category>
 	<pattern>*</pattern>
 	<template>
@@ -43,7 +43,7 @@
 			<li>Does talking about this bother you?</li>
 		</random>
 	</template>
-</category>
+</category>-->
 
 <category>
 	<pattern>APOLOGIZE *</pattern>
@@ -209,7 +209,7 @@
 	</template>
 </category>
 
-<category>
+<!--<category>
 	<pattern>HELLO</pattern>
 	<template>
 		<random>
@@ -272,7 +272,7 @@
 <category>
 	<pattern>YO</pattern>
 	<template><srai>hello</srai></template>
-</category>
+</category>-->
 
 <category>
 	<pattern>COMPUTER</pattern>
