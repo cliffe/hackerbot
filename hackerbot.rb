@@ -56,6 +56,8 @@ def read_bots
       end
       bots[bot_name]['current_hack'] = 0
 
+      bots[bot_name]['current_quiz'] = nil
+
       Print.debug bots[bot_name]['hacks'].to_s
 
       bots[bot_name]['bot'] = Cinch::Bot.new do
@@ -96,6 +98,35 @@ def read_bots
 
         end
 
+        on :message, /^(goto|attack) [0-9]+$/i do |m|
+          m.reply bots[bot_name]['messages']['goto'].sample
+          requested_index = m.message.chomp().split[1].to_i - 1
+
+          Print.debug "requested_index = #{requested_index}, bots[bot_name]['hacks'].length = #{bots[bot_name]['hacks'].length}"
+
+          # is this a valid attack number?
+          if requested_index < bots[bot_name]['hacks'].length
+            bots[bot_name]['current_hack'] = requested_index
+            current = bots[bot_name]['current_hack']
+
+            # prompt for current hack
+            m.reply bots[bot_name]['hacks'][current]['prompt']
+            m.reply bots[bot_name]['messages']['say_ready'].sample
+          else
+            m.reply bots[bot_name]['messages']['invalid']
+          end
+
+        end
+
+        on :message, /^(the answer is|answer):? .+$/i do |m|
+          answer = m.message.chomp().split[1].to_i - 1
+          answer = m.message.chomp().match(/(the answer is|answer):? (.+)$/i)[2]
+
+          Print.debug "answer = #{answer}"
+
+
+        end
+
         on :message, 'previous' do |m|
           m.reply bots[bot_name]['messages']['previous'].sample
 
@@ -127,10 +158,9 @@ def read_bots
 
         # fallback to AIML ALICE chatbot responses
         on :message do |m|
-          Print.debug "test1"
 
           # Only process messages not related to controlling attacks
-          return if m.message =~ /help|next|previous|list/
+          return if m.message =~ /help|next|previous|list|^(goto|attack) [0-9]|(the answer is|answer)/
 
           begin
             reaction = bots[bot_name]['chat_ai'].get_reaction(m.message)
@@ -140,11 +170,9 @@ def read_bots
             puts e.backtrace.inspect
             reaction = ''
           end
-          Print.debug "test2"
-          if reaction
+          if reaction != ''
             m.reply reaction
           else
-            Print.debug reaction
             if m.message.include?('?')
               m.reply bots[bot_name]['messages']['non_answer'].sample
             end
@@ -166,7 +194,6 @@ def read_bots
             # sleep(1)
             stdin.puts "echo shelltest\n"
             sleep(2)
-            Print.debug "AAAA"
             line = stdout_err.gets.chomp()
             Print.debug line
             if line == "shelltest"
@@ -197,17 +224,24 @@ def read_bots
                   m.reply "#{condition['message']}"
                 end
 
-                if condition_met && condition.key?('trigger_next')
-                  # is this the last one?
-                  if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
-                    bots[bot_name]['current_hack'] += 1
-                    current = bots[bot_name]['current_hack']
+                if condition_met
+                  if condition.key?('trigger_next')
+                    # is this the last one?
+                    if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
+                      bots[bot_name]['current_hack'] += 1
+                      current = bots[bot_name]['current_hack']
 
-                    sleep(1)
-                    # prompt for current hack
-                    m.reply bots[bot_name]['hacks'][current]['prompt']
-                  else
-                    m.reply bots[bot_name]['messages']['last_attack'].sample
+                      sleep(1)
+                      # prompt for current hack
+                      m.reply bots[bot_name]['hacks'][current]['prompt']
+                    else
+                      m.reply bots[bot_name]['messages']['last_attack'].sample
+                    end
+                  end
+
+                  if condition.key?('quiz')
+                    m.reply condition['quiz']['question']
+                    bots[bot_name]['current_quiz'] = 0
                   end
                 end
               end

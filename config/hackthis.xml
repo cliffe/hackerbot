@@ -21,6 +21,8 @@
 		<previous>Ok, I'll do what I can to back things up...</previous>
 		<previous>Ok, previous attack...</previous>
 		<previous>Ok, backing up.</previous>
+		<goto>Ok, skiping it along.</goto>
+		<goto>Let me see what I can do to goto that attack.</goto>
 		<last_attack>That was the last attack for now. You can rest easy, until next time... (End.)</last_attack>
 		<last_attack>That was the last attack. Game over?</last_attack>
 		<first_attack>You are back to the beginning!</first_attack>
@@ -34,6 +36,9 @@
 		<got_shell>We have shell.</got_shell>
 		<repeat>Let me know when you are 'ready', if you want to move on to another attack, say 'next', or 'previous' and I'll move things along</repeat>
 		<repeat>Say 'ready', 'next', or 'previous'.</repeat>
+		<say_answer>Say "The answer is *X*".</say_answer>
+		<!--Single responses:-->
+		<invalid>That's not possible.</invalid>
 		<non_answer>Wouldn't you like to know.</non_answer>
 	</messages>
 
@@ -169,21 +174,24 @@
 	<!--TODO-->
 	<hack>
 		<!--<topic>Detecting changes to resources using backups</topic>-->
-		<prompt>An attempt to add a new user is coming, let it happen. First, create a backup of /etc/passwd, then find the username by diffing using a backup.</prompt>
-
+		<prompt>An attempt to add a new user is coming, let it happen. But first create a backup of /etc/passwd.</prompt>
 		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 		<get_shell>bash</get_shell>
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
-		<post_command>adduser hackerbot</post_command>
+		<post_command>sudo adduser hackerbot --gecos '' --disabled-password --quiet; echo $?</post_command>
 		<condition>
-			<output_matches>added</output_matches>
+			<output_matches>0</output_matches>
 			<message>User added</message>
-			<trigger_next>true</trigger_next>
+			<!--<trigger_next>true</trigger_next>-->
 			<quiz>
-				<question>What username was created?</question>
+				<question>Now after the attack, find the username added by diffing using a backup. What username was created?</question>
 				<answer>hackerbot</answer>
 				<correct_answer>flag{yay!}</correct_answer>
 			</quiz>
+		</condition>
+		<condition>
+			<output_matches>already exists</output_matches>
+			<message>:( Remove the user and try again.</message>
 		</condition>
 		<condition>
 			<output_matches>Permission denied|Operation not permitted|Read-only</output_matches>
