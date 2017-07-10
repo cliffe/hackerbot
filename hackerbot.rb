@@ -124,9 +124,7 @@ def read_bots
           answer = m.message.chomp().split[1].to_i - 1
           answer = m.message.chomp().match(/(the answer is|answer):? (.+)$/i)[2]
 
-          Print.debug "answer = #{answer}"
-
-          current_quiz = bots[bot_name]['current_quiz']
+          # current_quiz = bots[bot_name]['current_quiz']
           current = bots[bot_name]['current_hack']
 
           quiz = nil
@@ -140,10 +138,10 @@ def read_bots
 
           if quiz != nil
             if answer.match(quiz['answer'])
-              m.reply 'CORRECT!!!!!!'
+              m.reply bots[bot_name]['messages']['correct_answer']
               m.reply quiz['correct_answer_response']
 
-              # Repeated logic
+              # Repeated logic for trigger_next_attack
               if quiz.key?('trigger_next_attack')
                 if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
                   bots[bot_name]['current_hack'] += 1
@@ -159,19 +157,11 @@ def read_bots
               end
 
             else
-              m.reply 'INCORRECT!!!!!'
+              m.reply bots[bot_name]['messages']['incorrect_answer']
             end
           else
-            m.reply 'There is no question to answer'
+            m.reply bots[bot_name]['messages']['no_quiz']
           end
-
-          Print.debug bots[bot_name]['hacks'][current].to_s
-          # Print.debug bots[bot_name]['hacks'][current]['condition']['quiz'][current_quiz]['answer']
-
-          # else
-          #   m.reply 'Not currently waiting on an answer'
-          # end
-
 
         end
 

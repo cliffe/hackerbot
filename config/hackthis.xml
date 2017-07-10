@@ -38,6 +38,7 @@
 		<repeat>Say 'ready', 'next', or 'previous'.</repeat>
 		<!--Single responses:-->
 		<say_answer>Say "The answer is *X*".</say_answer>
+		<no_quiz>There is no question to answer</no_quiz>
 		<correct_answer>Correct</correct_answer>
 		<incorrect_answer>Incorrect</incorrect_answer>
 		<invalid>That's not possible.</invalid>
