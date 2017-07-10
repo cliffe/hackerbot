@@ -36,8 +36,10 @@
 		<got_shell>We have shell.</got_shell>
 		<repeat>Let me know when you are 'ready', if you want to move on to another attack, say 'next', or 'previous' and I'll move things along</repeat>
 		<repeat>Say 'ready', 'next', or 'previous'.</repeat>
-		<say_answer>Say "The answer is *X*".</say_answer>
 		<!--Single responses:-->
+		<say_answer>Say "The answer is *X*".</say_answer>
+		<correct_answer>Correct</correct_answer>
+		<incorrect_answer>Incorrect</incorrect_answer>
 		<invalid>That's not possible.</invalid>
 		<non_answer>Wouldn't you like to know.</non_answer>
 	</messages>
@@ -52,7 +54,7 @@
 		<condition>
 			<output_matches>Permission denied|Operation not permitted</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
-			<trigger_next>true</trigger_next>
+			<trigger_next_attack>true</trigger_next_attack>
 		</condition>
 		<condition>
 			<output_equals>0</output_equals>
@@ -78,7 +80,7 @@
 		<condition>
 			<output_matches>Permission denied</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
-			<trigger_next>true</trigger_next>
+			<trigger_next_attack>true</trigger_next_attack>
 		</condition>
 		<condition>
 			<output_equals>0</output_equals>
@@ -105,7 +107,7 @@
 		<condition>
 			<output_matches>Operation not permitted</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
-			<trigger_next>true</trigger_next>
+			<trigger_next_attack>true</trigger_next_attack>
 		</condition>
 		<condition> <!-- TODO: chmod to defeat the defense -->
 			<output_matches>Permission denied</output_matches>
@@ -138,7 +140,7 @@
 		<condition>
 			<output_matches>Operation not permitted</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
-			<trigger_next>true</trigger_next>
+			<trigger_next_attack>true</trigger_next_attack>
 		</condition>
 		<condition>
 			<output_matches>No such file or directory</output_matches>
@@ -160,7 +162,7 @@
 		<condition>
 			<output_matches>Read-only file system</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
-			<trigger_next>true</trigger_next>
+			<trigger_next_attack />
 		</condition>
 		<condition>
 			<output_matches>Permission denied|Operation not permitted</output_matches>
@@ -182,12 +184,8 @@
 		<condition>
 			<output_matches>0</output_matches>
 			<message>User added</message>
-			<!--<trigger_next>true</trigger_next>-->
-			<quiz>
-				<question>Now after the attack, find the username added by diffing using a backup. What username was created?</question>
-				<answer>hackerbot</answer>
-				<correct_answer>flag{yay!}</correct_answer>
-			</quiz>
+			<!--<trigger_next_attack>true</trigger_next_attack>-->
+			<trigger_quiz />
 		</condition>
 		<condition>
 			<output_matches>already exists</output_matches>
@@ -200,6 +198,13 @@
 		<else_condition>
 			<message>:( Something was not right...</message>
 		</else_condition>
+
+		<quiz>
+			<question>Now after the attack, find the username added by diffing using a backup. What username was created?</question>
+			<answer>hackerbot|test</answer>
+			<correct_answer_response>:) flag{yay!}</correct_answer_response>
+			<trigger_next_attack />
+		</quiz>
 
 	</hack>
 

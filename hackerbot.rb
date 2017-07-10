@@ -43,7 +43,7 @@ def read_bots
       bots[bot_name] = {}
 
       chatbot_rules = hackerbot.at_xpath('AIML_chatbot_rules').text
-      Print.debug "Loading chat_ai from #{chatbot_rules}"
+      Print.debug "Loading chatbot ai from #{chatbot_rules}"
       bots[bot_name]['chat_ai'] = ProgramR::Facade.new
       bots[bot_name]['chat_ai'].learn([chatbot_rules])
 
@@ -87,6 +87,7 @@ def read_bots
           # is this the last one?
           if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
             bots[bot_name]['current_hack'] += 1
+            bots[bot_name]['current_quiz'] = nil
             current = bots[bot_name]['current_hack']
 
             # prompt for current hack
@@ -107,6 +108,7 @@ def read_bots
           # is this a valid attack number?
           if requested_index < bots[bot_name]['hacks'].length
             bots[bot_name]['current_hack'] = requested_index
+            bots[bot_name]['current_quiz'] = nil
             current = bots[bot_name]['current_hack']
 
             # prompt for current hack
@@ -124,6 +126,52 @@ def read_bots
 
           Print.debug "answer = #{answer}"
 
+          current_quiz = bots[bot_name]['current_quiz']
+          current = bots[bot_name]['current_hack']
+
+          quiz = nil
+          # is there ONE quiz question?
+          if bots[bot_name]['hacks'][current].key?('quiz') && bots[bot_name]['hacks'][current]['quiz'].key?('answer')
+            quiz = bots[bot_name]['hacks'][current]['quiz']
+          # multiple quiz questions?
+          # elsif bots[bot_name]['hacks'][current]['quiz'][current_quiz].key?('answer')
+          #   quiz = bots[bot_name]['hacks'][current]['quiz'][current_quiz]
+          end
+
+          if quiz != nil
+            if answer.match(quiz['answer'])
+              m.reply 'CORRECT!!!!!!'
+              m.reply quiz['correct_answer_response']
+
+              # Repeated logic
+              if quiz.key?('trigger_next_attack')
+                if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
+                  bots[bot_name]['current_hack'] += 1
+                  bots[bot_name]['current_quiz'] = nil
+                  current = bots[bot_name]['current_hack']
+
+                  sleep(1)
+                  # prompt for current hack
+                  m.reply bots[bot_name]['hacks'][current]['prompt']
+                else
+                  m.reply bots[bot_name]['messages']['last_attack'].sample
+                end
+              end
+
+            else
+              m.reply 'INCORRECT!!!!!'
+            end
+          else
+            m.reply 'There is no question to answer'
+          end
+
+          Print.debug bots[bot_name]['hacks'][current].to_s
+          # Print.debug bots[bot_name]['hacks'][current]['condition']['quiz'][current_quiz]['answer']
+
+          # else
+          #   m.reply 'Not currently waiting on an answer'
+          # end
+
 
         end
 
@@ -133,6 +181,7 @@ def read_bots
           # is this the last one?
           if bots[bot_name]['current_hack'] > 0
             bots[bot_name]['current_hack'] -= 1
+            bots[bot_name]['current_quiz'] = nil
             current = bots[bot_name]['current_hack']
 
             # prompt for current hack
@@ -163,7 +212,7 @@ def read_bots
           return if m.message =~ /help|next|previous|list|^(goto|attack) [0-9]|(the answer is|answer)/
 
           begin
-            reaction = bots[bot_name]['chat_ai'].get_reaction(m.message)
+            reaction = bots[bot_name]['chat_ai'].get_reaction(m.message.gsub /([^a-z0-9\- ]+)/i, '')
 
           rescue Exception => e
             puts e.message
@@ -225,10 +274,12 @@ def read_bots
                 end
 
                 if condition_met
-                  if condition.key?('trigger_next')
+                  # Repeated logic for trigger_next_attack
+                  if condition.key?('trigger_next_attack')
                     # is this the last one?
                     if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
                       bots[bot_name]['current_hack'] += 1
+                      bots[bot_name]['current_quiz'] = nil
                       current = bots[bot_name]['current_hack']
 
                       sleep(1)
@@ -239,8 +290,9 @@ def read_bots
                     end
                   end
 
-                  if condition.key?('quiz')
-                    m.reply condition['quiz']['question']
+                  if condition.key?('trigger_quiz')
+                    m.reply bots[bot_name]['hacks'][current]['quiz']['question']
+                    m.reply bots[bot_name]['messages']['say_answer']
                     bots[bot_name]['current_quiz'] = 0
                   end
                 end
