@@ -46,12 +46,12 @@
 	</messages>
 
 	<hack>
-		<prompt>An attempt to delete /tmp/test/1 is coming. Stop the attack using access controls.</prompt>
+		<prompt>An attempt to delete /secrets/1 is coming. Stop the attack using access controls.</prompt>
 
 		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 		<get_shell>bash</get_shell>
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
-		<post_command>rm --interactive=never /tmp/test/1; echo $?</post_command>
+		<post_command>rm --interactive=never /secrets/1; echo $?</post_command>
 		<condition>
 			<output_matches>Permission denied|Operation not permitted</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
@@ -72,12 +72,12 @@
 	</hack>
 
 	<hack>
-		<prompt>An attempt to delete /tmp/test/2 is coming. Stop the attack using access controls.</prompt>
+		<prompt>An attempt to delete /secrets/2 is coming. Stop the attack using access controls.</prompt>
 
 		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 		<get_shell>bash</get_shell>
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
-		<post_command>rm --interactive=never /tmp/test/2; echo $?</post_command>
+		<post_command>rm --interactive=never /secrets/2; echo $?</post_command>
 		<condition>
 			<output_matches>Permission denied</output_matches>
 			<message>:) Well done! flag{yay1!}</message>
@@ -99,7 +99,7 @@
 
 	<hack>
 		<!--<topic>Protecting integrity with file attributes</topic>-->
-		<prompt>An attempt to delete /tmp/test/log1 is coming. Stop the attack using file attributes.</prompt>
+		<prompt>An attempt to delete /secrets/log1 is coming. Stop the attack using file attributes.</prompt>
 
 		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 		<get_shell>bash</get_shell>
@@ -128,12 +128,12 @@
 	</hack>
 	<hack>
 		<!--<topic>Protecting integrity with file attributes</topic>-->
-		<prompt>An attempt to overwrite /tmp/test/log1 is coming. Stop the attack by making the file append only.</prompt>
+		<prompt>An attempt to overwrite /secrets/log1 is coming. Stop the attack by making the file append only.</prompt>
 
 		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 		<get_shell>bash</get_shell>
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
-		<post_command>echo 'your logs are gone!' > /tmp/test/log1; echo 'damn!' >> /tmp/test/log1; tail /tmp/test/log1</post_command>
+		<post_command>echo 'your logs are gone!' > /secrets/log1; echo 'damn!' >> /tmp/test/log1; tail /tmp/test/log1</post_command>
 		<condition>
 			<output_not_matches>damn!</output_not_matches>
 			<message>:( You stopped anything from being appended to the file. What kind of log file do you think this is?</message>
@@ -174,14 +174,13 @@
 		</else_condition>
 	</hack>
 
-	<!--TODO-->
 	<hack>
 		<!--<topic>Detecting changes to resources using backups</topic>-->
 		<prompt>An attempt to add a new user is coming, let it happen. But first create a backup of /etc/passwd.</prompt>
 		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 		<get_shell>bash</get_shell>
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
-		<post_command>sudo adduser hackerbot --gecos '' --disabled-password --quiet; echo $?</post_command>
+		<post_command>sudo adduser hackerbot --gecos 'flag{yay!}' --disabled-password --quiet; echo $?</post_command>
 		<condition>
 			<output_matches>0</output_matches>
 			<message>User added</message>
@@ -202,11 +201,96 @@
 
 		<quiz>
 			<question>Now after the attack, find the username added by diffing using a backup. What username was created?</question>
-			<answer>hackerbot|test</answer>
+			<answer>^hackerbot$</answer>
+			<correct_answer_response>:) flag{yay!}</correct_answer_response>
+			<trigger_next_attack />
+		</quiz>
+	</hack>
+
+	<hack>
+		<!--<topic>Detecting changes to resources using backups</topic>-->
+		<prompt>An attempt to edit a config file is coming, let it happen. But first create a backup of the /etc/ directory to /tmp/etc-backup/.</prompt>
+		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+		<get_shell>bash</get_shell>
+		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>echo '# flag{yay!}' >> `find /etc/ -name '*.sh' | sort -R | head -n 1`; echo $?</post_command>
+		<condition>
+			<output_matches>0</output_matches>
+			<message>A flag has been inserted into a random file... Use your backups to compare to the original to find the flag. Get to work!</message>
+			<trigger_quiz />
+		</condition>
+		<condition>
+			<output_matches>Permission denied|Operation not permitted|Read-only</output_matches>
+			<message>:( You stopped the attack, rather than monitor for changes...</message>
+		</condition>
+		<else_condition>
+			<message>:( Something was not right...</message>
+		</else_condition>
+
+		<quiz>
+			<question>Find the flag, what file was the flag stored in?</question>
+			<answer>^/etc/.*sh$</answer>
 			<correct_answer_response>:) flag{yay!}</correct_answer_response>
 			<trigger_next_attack />
 		</quiz>
 
+	</hack>
+
+	<hack>
+		<!--<topic>Detecting changes to resources using backups</topic>-->
+		<prompt>An attempt to edit a config file is coming, let it happen.</prompt>
+		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+		<get_shell>bash</get_shell>
+		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>echo '# flag{yay!}' >> `find /tmp/etc-backup/ -name '*.sh' | sort -R | head -n 1`; echo $?</post_command>
+		<condition>
+			<output_matches>0</output_matches>
+			<message>A flag has been inserted into a random file IN YOUR BACKUPS! (Did you really think that was a safe place to store them?) Find the flag. Get to work!</message>
+			<trigger_quiz />
+		</condition>
+		<condition>
+			<output_matches>Permission denied|Operation not permitted|Read-only</output_matches>
+			<message>:( You stopped the attack, rather than monitor for changes... We are trying to write to /tmp/etc-backup/</message>
+		</condition>
+		<else_condition>
+			<message>:( Something was not right... We are trying to write to /tmp/etc-backup/</message>
+		</else_condition>
+
+		<quiz>
+			<question>Find the flag, what file was the flag stored in?</question>
+			<answer>^/etc-backup/.*sh$</answer>
+			<correct_answer_response>:) flag{yay!}</correct_answer_response>
+			<trigger_next_attack />
+		</quiz>
+	</hack>
+
+	<!--TODO-->
+	<hack>
+		<!--<topic>File integrity checkers</topic>-->
+		<prompt>An attempt to edit a config file is coming, let it happen.</prompt>
+		<!--ssh -oStrictHostKeyChecking=no control@localhost -->
+		<get_shell>bash</get_shell>
+		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
+		<post_command>echo '# flag{yay!}' >> `find /tmp/etc-backup/ -name '*.sh' | sort -R | head -n 1`; echo $?</post_command>
+		<condition>
+			<output_matches>0</output_matches>
+			<message>A flag has been inserted into a random file IN YOUR BACKUPS! (Did you really think that was a safe place to store them?) Find the flag. Get to work!</message>
+			<trigger_quiz />
+		</condition>
+		<condition>
+			<output_matches>Permission denied|Operation not permitted|Read-only</output_matches>
+			<message>:( You stopped the attack, rather than monitor for changes... We are trying to write to /tmp/etc-backup/</message>
+		</condition>
+		<else_condition>
+			<message>:( Something was not right... We are trying to write to /tmp/etc-backup/</message>
+		</else_condition>
+
+		<quiz>
+			<question>Find the flag, what file was the flag stored in?</question>
+			<answer>^/etc-backup/.*sh$</answer>
+			<correct_answer_response>:) flag{yay!}</correct_answer_response>
+			<trigger_next_attack />
+		</quiz>
 	</hack>
 
 </hackerbot>
