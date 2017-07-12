@@ -314,6 +314,7 @@ def read_bots
           end
           m.reply bots[bot_name]['messages']['repeat'].sample
         end
+
       end
     end
   end
