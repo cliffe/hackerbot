@@ -47,6 +47,10 @@ def read_bots
       bots[bot_name]['chat_ai'] = ProgramR::Facade.new
       bots[bot_name]['chat_ai'].learn([chatbot_rules])
 
+      get_shell = hackerbot.at_xpath('get_shell').text
+      Print.debug get_shell
+      bots[bot_name]['get_shell'] = get_shell
+
       bots[bot_name]['messages'] = Nori.new.parse(hackerbot.at_xpath('//messages').to_s)['messages']
       Print.debug bots[bot_name]['messages'].to_s
 
@@ -223,13 +227,17 @@ def read_bots
         on :message, 'ready' do |m|
           m.reply bots[bot_name]['messages']['getting_shell'].sample
           current = bots[bot_name]['current_hack']
-          # cmd_output = `#{bots[bot_name]['hacks'][current]['get_shell']} << `
 
-          shell_cmd = bots[bot_name]['hacks'][current]['get_shell']
+          # use bot-wide method for obtaining shell, unless specified per-attack
+          if bots[bot_name]['hacks'][current].key?('get_shell')
+            shell_cmd = bots[bot_name]['hacks'][current]['get_shell']
+          else
+            shell_cmd = bots[bot_name]['get_shell']
+          end
           Print.debug shell_cmd
 
           Open3.popen2e(shell_cmd) do |stdin, stdout_err|
-            # check whether we have shell by echoing "test"
+            # check whether we have shell by echoing "shelltest"
             # sleep(1)
             stdin.puts "echo shelltest\n"
             sleep(2)
@@ -295,7 +303,12 @@ def read_bots
 
 
             else
-              m.reply bots[bot_name]['hacks'][current]['shell_fail_message']
+              # shell fail message will use the default message, unless specified for the attack
+              if m.reply bots[bot_name]['hacks'][current].key?('shell_fail_message')
+                m.reply bots[bot_name]['hacks'][current]['shell_fail_message']
+              else
+                m.reply bots[bot_name]['messages']['shell_fail_message']
+              end
             end
 
           end
