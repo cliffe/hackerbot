@@ -249,7 +249,6 @@
 		</quiz>
 	</hack>
 
-	<!--TODO-->
 	<hack>
 		<!--<topic>File integrity checkers</topic>-->
 		<prompt>Creating a new file in /secrets/...</prompt>
@@ -262,10 +261,10 @@
 		</condition>
 		<condition>
 			<output_matches>Permission denied|Operation not permitted|Read-only</output_matches>
-			<message>:( You stopped the attack, rather than monitor for changes... We are trying to write to /tmp/etc-backup/</message>
+			<message>:( You stopped the attack, rather than monitor for changes... We need to be able to write to /secrets/something_secret/</message>
 		</condition>
 		<else_condition>
-			<message>:( Something was not right... We are trying to write to /tmp/etc-backup/</message>
+			<message>:( Something was not right... We are trying to write to /secrets/something_secret</message>
 		</else_condition>
 
 		<quiz>
@@ -275,5 +274,40 @@
 			<trigger_next_attack />
 		</quiz>
 	</hack>
+
+	<!--TODO-->
+	<hack>
+		<!--<topic>File integrity checkers</topic>-->
+		<prompt>Going to edit one of your files in /etc/, use hash comparisons to detect which file changes</prompt>
+<!--TODO: not done yet-->
+		<post_command>echo 'somethingrandom' > /secrets/something_secret; echo $?</post_command>
+		<condition>
+			<output_matches>0</output_matches>
+			<message>Created /secrets/something_secret</message>
+			<trigger_quiz />
+		</condition>
+		<condition>
+			<output_matches>Permission denied|Operation not permitted|Read-only</output_matches>
+			<message>:( You stopped the attack, rather than monitor for changes... We need to be able to write to /secrets/something_secret/</message>
+		</condition>
+		<else_condition>
+			<message>:( Something was not right... We are trying to write to /secrets/something_secret</message>
+		</else_condition>
+
+		<quiz>
+			<question>What is the SHA1 hash of /secrets/something_secret?</question>
+			<answer>^c9eb312ea2daf4688838ed8c75b9b7e0329e33bd$</answer>
+			<correct_answer_response>:) flag{yay!}</correct_answer_response>
+			<trigger_next_attack />
+		</quiz>
+	</hack>
+
+	<!--Going to edit one of your files in /etc/, use hash comparisons to detect which file changes-->
+	<!--trojanising a file in /usr/bin/, use hash comparisons to detect which file changes-->
+	<!--trojanising a file in /usr/bin/, use package management to detect which file changes-->
+	<!--created a new random file in /etc/ use hash comparisons to find the filename (hint: sha1deep, hashdeep, or shasum) -->
+	<!--created a new random binary in /bin/|/usr/bin/ use hash comparisons to find the filename (hint: sha1deep, hashdeep, or shasum) -->
+	<!--copied a new random file in /etc/ use hash comparisons to find the filename (hint: sha1deep, hashdeep, or shasum) -->
+
 
 </hackerbot>
