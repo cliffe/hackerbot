@@ -302,21 +302,6 @@ def read_bots
           m.reply bots[bot_name]['messages']['repeat'].sample
         end
 
-        on :connect do |m|
-          # User("my_master").monitor
-          Print.debug m.to_s
-
-          
-          m.reply 'Test!'
-        end
-        #
-        # def on_online(m, user)
-        #   user.send "Hello master"
-        # end
-        #
-        # def on_offline(m, user)
-        #   @bot.loggers.info "I miss my master :("
-        # end
       end
     end
   end
