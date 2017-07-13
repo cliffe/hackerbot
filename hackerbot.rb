@@ -82,7 +82,7 @@ def read_bots
         end
 
         on :message, /help/i do |m|
-          m.reply bots[bot_name]['messages']['help'].sample
+          m.reply bots[bot_name]['messages']['help']
         end
 
         on :message, 'next' do |m|
@@ -203,21 +203,21 @@ def read_bots
         on :message do |m|
 
           # Only process messages not related to controlling attacks
-          return if m.message =~ /help|next|previous|list|^(goto|attack) [0-9]|(the answer is|answer)/
+          if m.message !~ /help|next|previous|list|^(goto|attack) [0-9]|(the answer is|answer)/
+            begin
+              reaction = bots[bot_name]['chat_ai'].get_reaction(m.message.gsub /([^a-z0-9\- ]+)/i, '')
 
-          begin
-            reaction = bots[bot_name]['chat_ai'].get_reaction(m.message.gsub /([^a-z0-9\- ]+)/i, '')
-
-          rescue Exception => e
-            puts e.message
-            puts e.backtrace.inspect
-            reaction = ''
-          end
-          if reaction != ''
-            m.reply reaction
-          else
-            if m.message.include?('?')
-              m.reply bots[bot_name]['messages']['non_answer']
+            rescue Exception => e
+              puts e.message
+              puts e.backtrace.inspect
+              reaction = ''
+            end
+            if reaction != ''
+              m.reply reaction
+            else
+              if m.message.include?('?')
+                m.reply bots[bot_name]['messages']['non_answer']
+              end
             end
           end
 
