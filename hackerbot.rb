@@ -217,7 +217,7 @@ def read_bots
             m.reply reaction
           else
             if m.message.include?('?')
-              m.reply bots[bot_name]['messages']['non_answer'].sample
+              m.reply bots[bot_name]['messages']['non_answer']
             end
           end
 

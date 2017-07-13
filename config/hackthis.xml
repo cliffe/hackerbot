@@ -7,18 +7,18 @@
 
 	<AIML_chatbot_rules>config/AIML</AIML_chatbot_rules>
 
-	<!--can be overwritten per-attack-->
+	<!--Method for gaining shell access, can be overwritten per-attack-->
 	<!--ssh -oStrictHostKeyChecking=no control@localhost -->
 	<get_shell>bash</get_shell>
 
-	<!--messages, must provide alternatives for each message-->
 	<messages>
 		<greeting>The blackhat hacking group Empir3 are about to hack your system. I'll do what I can hold them off, but you are going to have to work with me to protect yourself. I'll cough up some flags if you work with me.</greeting>
+
+		<!--Must provide alternatives for each message-->
 		<say_ready>Let me know when you are 'ready', if you want to move on to another attack, say 'next', or 'previous' and I'll move things along</say_ready>
 		<say_ready>When you are ready, simply say 'ready'.</say_ready>
 		<say_ready>'Ready'?</say_ready>
 		<say_ready>Better hurry, the attack is imminent... Let me know when you're 'ready'.</say_ready>
-		<help>I am waiting for you to say 'ready', 'next', 'previous', or 'list'</help>
 		<next>Ok, I'll do what I can to move things along...</next>
 		<next>Moving things along to the next attack...</next>
 		<next>Ok, next attack...</next>
@@ -40,13 +40,16 @@
 		<got_shell>We have shell.</got_shell>
 		<repeat>Let me know when you are 'ready', if you want to move on to another attack, say 'next', or 'previous' and I'll move things along</repeat>
 		<repeat>Say 'ready', 'next', or 'previous'.</repeat>
+
 		<!--Single responses:-->
+		<help>I am waiting for you to say 'ready', 'next', 'previous', 'list', 'goto *X*', or 'answer *X*'</help>
 		<say_answer>Say "The answer is *X*".</say_answer>
 		<no_quiz>There is no question to answer</no_quiz>
 		<correct_answer>Correct</correct_answer>
 		<incorrect_answer>Incorrect</incorrect_answer>
 		<invalid>That's not possible.</invalid>
 		<non_answer>Wouldn't you like to know.</non_answer>
+
 		<!--can be overwritten per-attack-->
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
 	</messages>
