@@ -54,7 +54,7 @@
 		<shell_fail_message>Oh no. Failed to get shell... You need to let us in.</shell_fail_message>
 	</messages>
 
-	<hack>
+	<attack>
 		<prompt>An attempt to delete /secrets/1 is coming. Stop the attack using access controls.</prompt>
 
 		<post_command>rm --interactive=never /secrets/1; echo $?</post_command>
@@ -75,9 +75,9 @@
 			<message>:( Something was not right...</message>
 		</else_condition>
 
-	</hack>
+	</attack>
 
-	<hack>
+	<attack>
 		<prompt>An attempt to delete /secrets/2 is coming. Stop the attack using access controls.</prompt>
 
 		<post_command>rm --interactive=never /secrets/2; echo $?</post_command>
@@ -98,9 +98,9 @@
 			<message>:( Something was not right...</message>
 		</else_condition>
 
-	</hack>
+	</attack>
 
-	<hack>
+	<attack>
 		<!--<topic>Protecting integrity with file attributes</topic>-->
 		<prompt>An attempt to delete /secrets/log1 is coming. Stop the attack using file attributes.</prompt>
 
@@ -125,8 +125,8 @@
 		<else_condition>
 			<message>:( Something was not right...</message>
 		</else_condition>
-	</hack>
-	<hack>
+	</attack>
+	<attack>
 		<!--<topic>Protecting integrity with file attributes</topic>-->
 		<prompt>An attempt to overwrite /secrets/log1 is coming. Stop the attack by making the file append only.</prompt>
 
@@ -147,9 +147,9 @@
 		<else_condition>
 			<message>:( Something was not right...</message>
 		</else_condition>
-	</hack>
+	</attack>
 
-	<hack>
+	<attack>
 		<!--<topic>Protecting integrity with read-only filesystems</topic>-->
 		<prompt>An attempt to edit a file in /etc is coming. Stop the attack by bind mounting /etc/ as read-only.</prompt>
 
@@ -166,9 +166,9 @@
 		<else_condition>
 			<message>:( Something was not right...</message>
 		</else_condition>
-	</hack>
+	</attack>
 
-	<hack>
+	<attack>
 		<!--<topic>Detecting changes to resources using backups</topic>-->
 		<prompt>An attempt to add a new user is coming, let it happen. But first create a backup of /etc/passwd.</prompt>
 
@@ -197,9 +197,9 @@
 			<correct_answer_response>:) flag{yay!}</correct_answer_response>
 			<trigger_next_attack />
 		</quiz>
-	</hack>
+	</attack>
 
-	<hack>
+	<attack>
 		<!--<topic>Detecting changes to resources using backups</topic>-->
 		<prompt>An attempt to edit a config file is coming, let it happen. But first create a backup of the /etc/ directory to /tmp/etc-backup/.</prompt>
 
@@ -224,9 +224,9 @@
 			<trigger_next_attack />
 		</quiz>
 
-	</hack>
+	</attack>
 
-	<hack>
+	<attack>
 		<!--<topic>Detecting changes to resources using backups</topic>-->
 		<prompt>An attempt to edit a config file is coming, let it happen.</prompt>
 
@@ -250,9 +250,9 @@
 			<correct_answer_response>:) flag{yay!}</correct_answer_response>
 			<trigger_next_attack />
 		</quiz>
-	</hack>
+	</attack>
 
-	<hack>
+	<attack>
 		<!--<topic>File integrity checkers</topic>-->
 		<prompt>Creating a new file in /secrets/...</prompt>
 
@@ -276,10 +276,10 @@
 			<correct_answer_response>:) flag{yay!}</correct_answer_response>
 			<trigger_next_attack />
 		</quiz>
-	</hack>
+	</attack>
 
 	<!--TODO-->
-	<hack>
+	<attack>
 		<!--<topic>File integrity checkers</topic>-->
 		<prompt>Going to edit one of your files in /etc/, use hash comparisons to detect which file changes</prompt>
 <!--TODO: not done yet-->
@@ -303,7 +303,7 @@
 			<correct_answer_response>:) flag{yay!}</correct_answer_response>
 			<trigger_next_attack />
 		</quiz>
-	</hack>
+	</attack>
 
 	<!--Going to edit one of your files in /etc/, use hash comparisons to detect which file changes-->
 	<!--trojanising a file in /usr/bin/, use hash comparisons to detect which file changes-->

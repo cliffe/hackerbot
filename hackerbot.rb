@@ -54,15 +54,15 @@ def read_bots
       bots[bot_name]['messages'] = Nori.new.parse(hackerbot.at_xpath('//messages').to_s)['messages']
       Print.debug bots[bot_name]['messages'].to_s
 
-      bots[bot_name]['hacks'] = []
-      hackerbot.xpath('//hack').each do |hack|
-        bots[bot_name]['hacks'].push Nori.new.parse(hack.to_s)['hack']
+      bots[bot_name]['attacks'] = []
+      hackerbot.xpath('//attack').each do |attack|
+        bots[bot_name]['attacks'].push Nori.new.parse(attack.to_s)['attack']
       end
-      bots[bot_name]['current_hack'] = 0
+      bots[bot_name]['current_attack'] = 0
 
       bots[bot_name]['current_quiz'] = nil
 
-      Print.debug bots[bot_name]['hacks'].to_s
+      Print.debug bots[bot_name]['attacks'].to_s
 
       bots[bot_name]['bot'] = Cinch::Bot.new do
         configure do |c|
@@ -74,10 +74,10 @@ def read_bots
         on :message, /hello/i do |m|
           m.reply "Hello, #{m.user.nick}."
           m.reply bots[bot_name]['greeting']
-          current = bots[bot_name]['current_hack']
+          current = bots[bot_name]['current_attack']
 
           # prompt for the first attack
-          m.reply bots[bot_name]['hacks'][current]['prompt']
+          m.reply bots[bot_name]['attacks'][current]['prompt']
           m.reply bots[bot_name]['messages']['say_ready'].sample
         end
 
@@ -89,13 +89,13 @@ def read_bots
           m.reply bots[bot_name]['messages']['next'].sample
 
           # is this the last one?
-          if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
-            bots[bot_name]['current_hack'] += 1
+          if bots[bot_name]['current_attack'] < bots[bot_name]['attacks'].length - 1
+            bots[bot_name]['current_attack'] += 1
             bots[bot_name]['current_quiz'] = nil
-            current = bots[bot_name]['current_hack']
+            current = bots[bot_name]['current_attack']
 
             # prompt for current hack
-            m.reply bots[bot_name]['hacks'][current]['prompt']
+            m.reply bots[bot_name]['attacks'][current]['prompt']
             m.reply bots[bot_name]['messages']['say_ready'].sample
           else
             m.reply bots[bot_name]['messages']['last_attack'].sample
@@ -107,16 +107,16 @@ def read_bots
           m.reply bots[bot_name]['messages']['goto'].sample
           requested_index = m.message.chomp().split[1].to_i - 1
 
-          Print.debug "requested_index = #{requested_index}, bots[bot_name]['hacks'].length = #{bots[bot_name]['hacks'].length}"
+          Print.debug "requested_index = #{requested_index}, bots[bot_name]['attacks'].length = #{bots[bot_name]['attacks'].length}"
 
           # is this a valid attack number?
-          if requested_index < bots[bot_name]['hacks'].length
-            bots[bot_name]['current_hack'] = requested_index
+          if requested_index < bots[bot_name]['attacks'].length
+            bots[bot_name]['current_attack'] = requested_index
             bots[bot_name]['current_quiz'] = nil
-            current = bots[bot_name]['current_hack']
+            current = bots[bot_name]['current_attack']
 
             # prompt for current hack
-            m.reply bots[bot_name]['hacks'][current]['prompt']
+            m.reply bots[bot_name]['attacks'][current]['prompt']
             m.reply bots[bot_name]['messages']['say_ready'].sample
           else
             m.reply bots[bot_name]['messages']['invalid']
@@ -129,15 +129,15 @@ def read_bots
           answer = m.message.chomp().match(/(the answer is|answer):? (.+)$/i)[2]
 
           # current_quiz = bots[bot_name]['current_quiz']
-          current = bots[bot_name]['current_hack']
+          current = bots[bot_name]['current_attack']
 
           quiz = nil
           # is there ONE quiz question?
-          if bots[bot_name]['hacks'][current].key?('quiz') && bots[bot_name]['hacks'][current]['quiz'].key?('answer')
-            quiz = bots[bot_name]['hacks'][current]['quiz']
+          if bots[bot_name]['attacks'][current].key?('quiz') && bots[bot_name]['attacks'][current]['quiz'].key?('answer')
+            quiz = bots[bot_name]['attacks'][current]['quiz']
           # multiple quiz questions?
-          # elsif bots[bot_name]['hacks'][current]['quiz'][current_quiz].key?('answer')
-          #   quiz = bots[bot_name]['hacks'][current]['quiz'][current_quiz]
+          # elsif bots[bot_name]['attacks'][current]['quiz'][current_quiz].key?('answer')
+          #   quiz = bots[bot_name]['attacks'][current]['quiz'][current_quiz]
           end
 
           if quiz != nil
@@ -147,14 +147,14 @@ def read_bots
 
               # Repeated logic for trigger_next_attack
               if quiz.key?('trigger_next_attack')
-                if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
-                  bots[bot_name]['current_hack'] += 1
+                if bots[bot_name]['current_attack'] < bots[bot_name]['attacks'].length - 1
+                  bots[bot_name]['current_attack'] += 1
                   bots[bot_name]['current_quiz'] = nil
-                  current = bots[bot_name]['current_hack']
+                  current = bots[bot_name]['current_attack']
 
                   sleep(1)
                   # prompt for current hack
-                  m.reply bots[bot_name]['hacks'][current]['prompt']
+                  m.reply bots[bot_name]['attacks'][current]['prompt']
                 else
                   m.reply bots[bot_name]['messages']['last_attack'].sample
                 end
@@ -173,13 +173,13 @@ def read_bots
           m.reply bots[bot_name]['messages']['previous'].sample
 
           # is this the last one?
-          if bots[bot_name]['current_hack'] > 0
-            bots[bot_name]['current_hack'] -= 1
+          if bots[bot_name]['current_attack'] > 0
+            bots[bot_name]['current_attack'] -= 1
             bots[bot_name]['current_quiz'] = nil
-            current = bots[bot_name]['current_hack']
+            current = bots[bot_name]['current_attack']
 
             # prompt for current hack
-            m.reply bots[bot_name]['hacks'][current]['prompt']
+            m.reply bots[bot_name]['attacks'][current]['prompt']
             m.reply bots[bot_name]['messages']['say_ready'].sample
 
           else
@@ -189,9 +189,9 @@ def read_bots
         end
 
         on :message, 'list' do |m|
-          bots[bot_name]['hacks'].each_with_index {|val, index|
+          bots[bot_name]['attacks'].each_with_index {|val, index|
             uptohere = ''
-            if index == bots[bot_name]['current_hack']
+            if index == bots[bot_name]['current_attack']
               uptohere = '--> '
             end
 
@@ -226,11 +226,11 @@ def read_bots
 
         on :message, 'ready' do |m|
           m.reply bots[bot_name]['messages']['getting_shell'].sample
-          current = bots[bot_name]['current_hack']
+          current = bots[bot_name]['current_attack']
 
           # use bot-wide method for obtaining shell, unless specified per-attack
-          if bots[bot_name]['hacks'][current].key?('get_shell')
-            shell_cmd = bots[bot_name]['hacks'][current]['get_shell']
+          if bots[bot_name]['attacks'][current].key?('get_shell')
+            shell_cmd = bots[bot_name]['attacks'][current]['get_shell']
           else
             shell_cmd = bots[bot_name]['get_shell']
           end
@@ -246,7 +246,7 @@ def read_bots
             if line == "shelltest"
               m.reply bots[bot_name]['messages']['got_shell'].sample
 
-              post_cmd = bots[bot_name]['hacks'][current]['post_command']
+              post_cmd = bots[bot_name]['attacks'][current]['post_command']
               if post_cmd
                 stdin.puts "#{post_cmd}\n"
               end
@@ -257,7 +257,7 @@ def read_bots
 
               m.reply "FYI: #{line}"
               condition_met = false
-              bots[bot_name]['hacks'][current]['condition'].each do |condition|
+              bots[bot_name]['attacks'][current]['condition'].each do |condition|
                 if !condition_met && condition.key?('output_matches') && line =~ /#{condition['output_matches']}/
                   condition_met = true
                   m.reply "#{condition['message']}"
@@ -275,37 +275,37 @@ def read_bots
                   # Repeated logic for trigger_next_attack
                   if condition.key?('trigger_next_attack')
                     # is this the last one?
-                    if bots[bot_name]['current_hack'] < bots[bot_name]['hacks'].length - 1
-                      bots[bot_name]['current_hack'] += 1
+                    if bots[bot_name]['current_attack'] < bots[bot_name]['attacks'].length - 1
+                      bots[bot_name]['current_attack'] += 1
                       bots[bot_name]['current_quiz'] = nil
-                      current = bots[bot_name]['current_hack']
+                      current = bots[bot_name]['current_attack']
 
                       sleep(1)
                       # prompt for current hack
-                      m.reply bots[bot_name]['hacks'][current]['prompt']
+                      m.reply bots[bot_name]['attacks'][current]['prompt']
                     else
                       m.reply bots[bot_name]['messages']['last_attack'].sample
                     end
                   end
 
                   if condition.key?('trigger_quiz')
-                    m.reply bots[bot_name]['hacks'][current]['quiz']['question']
+                    m.reply bots[bot_name]['attacks'][current]['quiz']['question']
                     m.reply bots[bot_name]['messages']['say_answer']
                     bots[bot_name]['current_quiz'] = 0
                   end
                 end
               end
               unless condition_met
-                if bots[bot_name]['hacks'][current]['else_condition']
-                  m.reply bots[bot_name]['hacks'][current]['else_condition']['message']
+                if bots[bot_name]['attacks'][current]['else_condition']
+                  m.reply bots[bot_name]['attacks'][current]['else_condition']['message']
                 end
               end
 
 
             else
               # shell fail message will use the default message, unless specified for the attack
-              if m.reply bots[bot_name]['hacks'][current].key?('shell_fail_message')
-                m.reply bots[bot_name]['hacks'][current]['shell_fail_message']
+              if m.reply bots[bot_name]['attacks'][current].key?('shell_fail_message')
+                m.reply bots[bot_name]['attacks'][current]['shell_fail_message']
               else
                 m.reply bots[bot_name]['messages']['shell_fail_message']
               end
