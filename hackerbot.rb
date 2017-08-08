@@ -72,8 +72,9 @@ def read_bots
         end
 
         on :message, /hello/i do |m|
+          m.reply "Hello, #{m.user.host}."
           m.reply "Hello, #{m.user.nick}."
-          m.reply bots[bot_name]['greeting']
+          m.reply bots[bot_name]['messages']['greeting']
           current = bots[bot_name]['current_attack']
 
           # prompt for the first attack
@@ -204,9 +205,9 @@ def read_bots
 
           # Only process messages not related to controlling attacks
           if m.message !~ /help|next|previous|list|^(goto|attack) [0-9]|(the answer is|answer)/
+            reaction = ''
             begin
               reaction = bots[bot_name]['chat_ai'].get_reaction(m.message.gsub /([^a-z0-9\- ]+)/i, '')
-
             rescue Exception => e
               puts e.message
               puts e.backtrace.inspect
@@ -234,6 +235,7 @@ def read_bots
           else
             shell_cmd = bots[bot_name]['get_shell']
           end
+          shell_cmd.gsub!(/{{chat_ip_address}}/, m.user.host.to_s)
           Print.debug shell_cmd
 
           Open3.popen2e(shell_cmd) do |stdin, stdout_err|
@@ -248,6 +250,7 @@ def read_bots
 
               post_cmd = bots[bot_name]['attacks'][current]['post_command']
               if post_cmd
+                post_cmd.gsub!(/{{chat_ip_address}}/, m.user.host.to_s)
                 stdin.puts "#{post_cmd}\n"
               end
 
@@ -301,8 +304,8 @@ def read_bots
                 end
               end
 
-
             else
+              Print.debug("Shell failed...")
               # shell fail message will use the default message, unless specified for the attack
               if m.reply bots[bot_name]['attacks'][current].key?('shell_fail_message')
                 m.reply bots[bot_name]['attacks'][current]['shell_fail_message']

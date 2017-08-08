@@ -9,7 +9,8 @@
 
 	<!--Method for gaining shell access, can be overwritten per-attack-->
 	<!--ssh -oStrictHostKeyChecking=no control@localhost -->
-	<get_shell>bash</get_shell>
+	<!--<get_shell>bash</get_shell>-->
+	<get_shell>sshpass -p randompassword ssh -oStrictHostKeyChecking=no root@{{chat_ip_address}} /bin/bash</get_shell>
 
 	<messages>
 		<greeting>The blackhat hacking group Empir3 are about to hack your system. I'll do what I can hold them off, but you are going to have to work with me to protect yourself. I'll cough up some flags if you work with me.</greeting>
