@@ -67,13 +67,12 @@ def read_bots
       bots[bot_name]['bot'] = Cinch::Bot.new do
         configure do |c|
           c.nick = bot_name
-          c.server = 'localhost'
-          c.channels = ['#hackerbottesting']
+          c.server = '172.28.128.3'
+          c.channels = ['#hackerbots']
         end
 
         on :message, /hello/i do |m|
-          m.reply "Hello, #{m.user.host}."
-          m.reply "Hello, #{m.user.nick}."
+          m.reply "Hello, #{m.user.nick} (#{m.user.host})."
           m.reply bots[bot_name]['messages']['greeting']
           current = bots[bot_name]['current_attack']
 
@@ -235,7 +234,11 @@ def read_bots
           else
             shell_cmd = bots[bot_name]['get_shell']
           end
+
+          # substitute special variables
           shell_cmd.gsub!(/{{chat_ip_address}}/, m.user.host.to_s)
+          # add a ; to ensure it is run via bash
+          shell_cmd << ';'
           Print.debug shell_cmd
 
           Open3.popen2e(shell_cmd) do |stdin, stdout_err|
@@ -307,13 +310,17 @@ def read_bots
             else
               Print.debug("Shell failed...")
               # shell fail message will use the default message, unless specified for the attack
-              if m.reply bots[bot_name]['attacks'][current].key?('shell_fail_message')
+              if bots[bot_name]['attacks'][current].key?('shell_fail_message')
                 m.reply bots[bot_name]['attacks'][current]['shell_fail_message']
               else
                 m.reply bots[bot_name]['messages']['shell_fail_message']
               end
+              # under specific situations reveal the error message to the user
+              if line =~ /command not found/
+                m.reply "Looks like there is some software missing: #{line}"
+              end
             end
-
+            
           end
           m.reply bots[bot_name]['messages']['repeat'].sample
         end
