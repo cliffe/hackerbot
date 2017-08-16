@@ -203,7 +203,7 @@ def read_bots
         on :message do |m|
 
           # Only process messages not related to controlling attacks
-          if m.message !~ /help|next|previous|list|^(goto|attack) [0-9]|(the answer is|answer)/
+          if m.message !~ /hello|help|next|previous|list|^(goto|attack) [0-9]|(the answer is|answer)/
             reaction = ''
             begin
               reaction = bots[bot_name]['chat_ai'].get_reaction(m.message.gsub /([^a-z0-9\- ]+)/i, '')
