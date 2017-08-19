@@ -141,7 +141,8 @@ def read_bots
           end
 
           if quiz != nil
-            if answer.match(quiz['answer'])
+            correct_answer = quiz['answer'].gsub(/{{post_command_output}}/, bots[bot_name]['attacks'][current]['post_command_output'])
+            if answer.match(correct_answer)
               m.reply bots[bot_name]['messages']['correct_answer']
               m.reply quiz['correct_answer_response']
 
@@ -260,6 +261,7 @@ def read_bots
               # sleep(1)
               stdin.close # no more input, end the program
               line = stdout_err.read.chomp()
+              bots[bot_name]['attacks'][current]['post_command_output'] = line
 
               m.reply "FYI: #{line}"
               condition_met = false
