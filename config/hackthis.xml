@@ -92,7 +92,7 @@
 		</condition>
 		<condition>
 			<output_equals>0</output_equals>
-			<message>:( We managed to delete your file! You need to use access controls to protect the file.</message>
+			<message>:( We managed to delete your file! You need to use access controls to protect the file. Create a new file.</message>
 		</condition>
 		<condition>
 			<output_matches>No such file or directory</output_matches>
@@ -120,7 +120,7 @@
 		</condition>
 		<condition>
 			<output_equals>0</output_equals>
-			<message>:( We managed to delete your file! You need to use file attributes to protect the file.</message>
+			<message>:( We managed to delete your file! You need to use file attributes to protect the file.  Create a new file.</message>
 		</condition>
 		<condition>
 			<output_matches>No such file or directory</output_matches>
@@ -283,11 +283,17 @@
 	</attack>
 
 	<!--TODO test this-->
-	<!--TODO: dont tell them the answer in the FYI feedback-->
 	<attack>
 		<!--<topic>File integrity checkers</topic>-->
 		<prompt>Going to edit one of your files in /etc/, use hash comparisons to detect which file changes</prompt>
-		<post_command>x=`find /etc/ -name '*.sh' | sort -R | head -n 1`; echo $x</post_command>
+		<post_command>x=`find /etc/ -name '*.sh' | sort -R | head -n 1`; echo '' >> $x; echo $x</post_command>
+		<suppress_command_output_feedback />
+
+		<condition>
+			<output_matches>/etc.*</output_matches>
+			<message>Good. Now answer this...</message>
+			<trigger_quiz />
+		</condition>
 		<condition>
 			<output_matches>Permission denied|Operation not permitted|Read-only</output_matches>
 			<message>:( You stopped the attack, rather than monitor for changes... We need to be able to write to /secrets/something_secret/</message>
@@ -297,19 +303,19 @@
 		</else_condition>
 
 		<quiz>
-			<question>What is the SHA1 hash of /secrets/something_secret?</question>
+			<question>What is the file that changed?</question>
 			<answer>{{post_command_output}}</answer>
 			<correct_answer_response>:) flag{yay!}</correct_answer_response>
 			<trigger_next_attack />
 		</quiz>
 	</attack>
 
-	<!--Going to edit one of your files in /etc/, use hash comparisons to detect which file changes-->
-	<!--trojanising a file in /usr/bin/, use hash comparisons to detect which file changes-->
-	<!--trojanising a file in /usr/bin/, use package management to detect which file changes-->
 	<!--created a new random file in /etc/ use hash comparisons to find the filename (hint: sha1deep, hashdeep, or shasum) -->
 	<!--created a new random binary in /bin/|/usr/bin/ use hash comparisons to find the filename (hint: sha1deep, hashdeep, or shasum) -->
 	<!--copied a new random file in /etc/ use hash comparisons to find the filename (hint: sha1deep, hashdeep, or shasum) -->
+
+	<!--trojanising a file in /usr/bin/, use hash comparisons to detect which file changes-->
+	<!--trojanising a file in /usr/bin/, use package management to detect which file changes-->
 
 
 </hackerbot>

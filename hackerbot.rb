@@ -4,8 +4,9 @@ require 'nori'
 require './print.rb'
 require 'open3'
 require 'programr'
+require 'getoptlong'
 
-def read_bots
+def read_bots (irc_server_ip_address)
   bots = {}
   Dir.glob("config/*.xml").each do |file|
     print "#{file}"
@@ -67,8 +68,9 @@ def read_bots
       bots[bot_name]['bot'] = Cinch::Bot.new do
         configure do |c|
           c.nick = bot_name
-          c.server = '172.28.128.3'
-          c.channels = ['#hackerbots']
+          c.server = irc_server_ip_address
+          # joins a channel named after the bot, and #bots
+          c.channels = ["##{bot_name}", '#bots']
         end
 
         on :message, /hello/i do |m|
@@ -231,9 +233,9 @@ def read_bots
 
           # use bot-wide method for obtaining shell, unless specified per-attack
           if bots[bot_name]['attacks'][current].key?('get_shell')
-            shell_cmd = bots[bot_name]['attacks'][current]['get_shell']
+            shell_cmd = bots[bot_name]['attacks'][current]['get_shell'].clone
           else
-            shell_cmd = bots[bot_name]['get_shell']
+            shell_cmd = bots[bot_name]['get_shell'].clone
           end
 
           # substitute special variables
@@ -247,9 +249,18 @@ def read_bots
             # sleep(1)
             stdin.puts "echo shelltest\n"
             sleep(2)
-            line = stdout_err.gets.chomp()
-            Print.debug line
-            if line == "shelltest"
+
+            # non-blocking read from buffer
+            lines = ''
+            begin
+              while ch = stdout_err.read_nonblock(1)
+                lines << ch
+              end
+            rescue # continue consuming until input blocks
+            end
+
+            Print.debug lines
+            if lines =~ /shelltest/i
               m.reply bots[bot_name]['messages']['got_shell'].sample
 
               post_cmd = bots[bot_name]['attacks'][current]['post_command']
@@ -260,21 +271,25 @@ def read_bots
 
               # sleep(1)
               stdin.close # no more input, end the program
-              line = stdout_err.read.chomp()
-              bots[bot_name]['attacks'][current]['post_command_output'] = line
+              lines = stdout_err.read.chomp()
+              bots[bot_name]['attacks'][current]['post_command_output'] = lines
 
-              m.reply "FYI: #{line}"
+              unless bots[bot_name]['attacks'][current].key?('suppress_command_output_feedback')
+                m.reply "FYI: #{lines}"
+              end
+              Print.debug lines
+
               condition_met = false
               bots[bot_name]['attacks'][current]['condition'].each do |condition|
-                if !condition_met && condition.key?('output_matches') && line =~ /#{condition['output_matches']}/
+                if !condition_met && condition.key?('output_matches') && lines =~ /#{condition['output_matches']}/
                   condition_met = true
                   m.reply "#{condition['message']}"
                 end
-                if !condition_met && condition.key?('output_not_matches') && line !~ /#{condition['output_not_matches']}/
+                if !condition_met && condition.key?('output_not_matches') && lines !~ /#{condition['output_not_matches']}/
                   condition_met = true
                   m.reply "#{condition['message']}"
                 end
-                if !condition_met && condition.key?('output_equals') && line == condition['output_equals']
+                if !condition_met && condition.key?('output_equals') && lines == condition['output_equals']
                   condition_met = true
                   m.reply "#{condition['message']}"
                 end
@@ -318,8 +333,8 @@ def read_bots
                 m.reply bots[bot_name]['messages']['shell_fail_message']
               end
               # under specific situations reveal the error message to the user
-              if line =~ /command not found/
-                m.reply "Looks like there is some software missing: #{line}"
+              if lines =~ /command not found/
+                m.reply "Looks like there is some software missing: #{lines}"
               end
             end
             
@@ -341,5 +356,38 @@ def start_bots(bots)
   end
 end
 
-bots = read_bots
+def usage
+  Print.std 'ruby hackerbot.rb [--irc-server host]'
+end
+
+# -- main --
+
+Print.std '~'*47
+Print.std ' '*19 + 'Hackerbot'
+Print.std '~'*47
+
+irc_server_ip_address = 'localhost'
+
+# Get command line arguments
+opts = GetoptLong.new(
+    [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
+    [ '--irc-server', '-i', GetoptLong::REQUIRED_ARGUMENT ],
+)
+
+# process option arguments
+opts.each do |opt, arg|
+  case opt
+    # Main options
+    when '--help'
+      usage
+    when '--irc-server'
+      irc_server_ip_address = arg;
+    else
+      Print.err "Argument not valid: #{arg}"
+      usage
+      exit
+  end
+end
+
+bots = read_bots(irc_server_ip_address)
 start_bots(bots)
